@@ -11,11 +11,15 @@ version = "1.0.0-BETA"
 repositories {
     mavenCentral()
     jcenter()
+    maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
+    maven("https://oss.jfrog.org/artifactory/oss-snapshot-local/")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
+    implementation("io.arrow-kt:arrow-core-data:0.9.0")
+    
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-api:1.7.25")
 
