@@ -1,0 +1,63 @@
+config {
+
+	// Profiles
+
+	// Default settings for each profile
+	defaults {
+	    // Remove invalid storage items
+		remove-invalid-items = false
+	}
+
+	profiles = ["mysite", "nginx-logs"]
+
+
+    mysite {
+			// Root path to site backup files
+			path = "/backups/mysite"
+
+            // Backup storage unit is directory
+			unit = "directory"
+
+			// Expected that each backup directory has name in specified date format
+			directory-date-format = "yyyy-MM-dd"
+
+			copies = 7 // How much copies to store
+
+			// Validation approaches for storage items
+			unit-validation {
+				md5-file-check = true // each file has .md5 file with hash
+				zip-test = true // check zip archive integrity
+				log-file-exists = true // log files should be exists
+
+				// files overall quantity should be equal or greater than in previous directory
+				qty-at-least-as-previous-valid = true
+			}
+
+			// What to do with out-of-date items
+			do {
+				// Remove from disk
+				remove = true
+			}
+	}
+
+	mysql-dumps {
+			path = "/backups/mysql" // корневой путь к файлам
+
+			unit = "file" // Storage unit is file
+
+			file-name-filter = ".*.sql" // Filter files by name (Regular expression)
+
+			copies = 7 // How much to store
+
+			unit-validation {
+				md5-file-check = true
+			}
+
+			// What to do for rotation
+			do {
+				// Remove
+				remove = true
+			}
+	}
+
+}
