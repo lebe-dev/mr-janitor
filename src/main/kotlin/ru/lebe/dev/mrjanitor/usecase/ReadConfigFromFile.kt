@@ -11,6 +11,8 @@ import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.Defaults.DEFAULT_KEEP_COPIES
+import ru.lebe.dev.mrjanitor.util.Defaults.DEFAULT_STORAGE_UNIT
 import ru.lebe.dev.mrjanitor.util.getInt
 import ru.lebe.dev.mrjanitor.util.getString
 import java.io.File
@@ -27,10 +29,11 @@ class ReadConfigFromFile {
             try {
                 val config = ConfigFactory.parseFile(file).getConfig("config")
 
-                when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME)) {
+                when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME,
+                                                      DEFAULT_STORAGE_UNIT, DEFAULT_KEEP_COPIES)) {
                     is Either.Right -> {
 
-                        when(val profiles = loadProfiles(config)) {
+                        when(val profiles = loadProfiles(config, defaultProfile.b)) {
                             is Either.Right -> {
                                 Either.right(
                                     AppConfig(
@@ -63,7 +66,7 @@ class ReadConfigFromFile {
         }
     }
 
-    private fun loadProfiles(config: Config): Either<OperationResult, List<Profile>> =
+    private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationResult, List<Profile>> =
         if (config.hasPath("profiles")) {
 
             val profiles = arrayListOf<Profile>()
@@ -71,7 +74,8 @@ class ReadConfigFromFile {
             var profileLoadError = false
 
             config.getStringList("profiles").forEach { profileName ->
-                when(val profile = loadProfile(config, profileName)) {
+                when(val profile = loadProfile(config, profileName,
+                                               defaultProfile.storageUnit, defaultProfile.keepCopies)) {
                     is Either.Right -> {
 
                         if (isProfileValid(profile.b)) {
@@ -100,15 +104,16 @@ class ReadConfigFromFile {
             Either.left(OperationResult.ERROR)
         }
 
-    private fun loadProfile(config: Config, profileName: String): Either<OperationResult, Profile> =
+    private fun loadProfile(config: Config, profileName: String,
+                            defaultStorageUnit: StorageUnit, defaultKeepCopies: Int): Either<OperationResult, Profile> =
 
         if (config.hasPath(profileName)) {
             Either.right(
                 Profile(
                     name = profileName,
                     path = config.getString("$profileName.path", ""),
-                    storageUnit = getStorageUnit(config, profileName),
-                    keepCopies = config.getInt("$profileName.keep-copies", 7),
+                    storageUnit = getStorageUnit(config, profileName, defaultStorageUnit),
+                    keepCopies = config.getInt("$profileName.keep-copies", defaultKeepCopies),
                     cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
                 )
             )
@@ -130,10 +135,11 @@ class ReadConfigFromFile {
             defaultValue
         }
 
-    private fun getStorageUnit(config: Config, profilePath: String): StorageUnit =
+    private fun getStorageUnit(config: Config, profilePath: String, defaultValue: StorageUnit): StorageUnit =
         when(config.getString("$profilePath.unit", "")) {
             "directory" -> StorageUnit.DIRECTORY
-            else -> StorageUnit.FILE
+            "file" -> StorageUnit.FILE
+            else -> defaultValue
         }
 
     private fun isProfileValid(profile: Profile): Boolean {

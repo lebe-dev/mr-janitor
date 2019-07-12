@@ -23,7 +23,7 @@ class ReadConfigFromFileTest: StringSpec({
 
         when (result) {
             is Either.Right -> {
-                result.b.profiles.size shouldBe 3
+                result.b.profiles.size shouldBe 2
 
                 val firstProfile = result.b.profiles.first()
 
@@ -33,21 +33,13 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.keepCopies shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
-                val secondProfile = result.b.profiles[1]
-
-                secondProfile.name shouldBe "nginx-logs"
-                secondProfile.path shouldBe "."
-                secondProfile.storageUnit shouldBe StorageUnit.FILE
-                secondProfile.keepCopies shouldBe 14
-                secondProfile.cleanAction shouldBe CleanAction.COMPRESS
-
                 val lastProfile = result.b.profiles.last()
 
-                lastProfile.name shouldBe "postgres"
+                lastProfile.name shouldBe "nginx-logs"
                 lastProfile.path shouldBe "."
                 lastProfile.storageUnit shouldBe StorageUnit.FILE
-                lastProfile.keepCopies shouldBe 5
-                lastProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+                lastProfile.keepCopies shouldBe 14
+                lastProfile.cleanAction shouldBe CleanAction.COMPRESS
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -86,6 +78,23 @@ class ReadConfigFromFileTest: StringSpec({
 
         when (result) {
             is Either.Right -> result.b.profiles.size shouldBe 1
+            is Either.Left -> throw Exception("assert error")
+        }
+    }
+
+    "Missing profile properties should be fulfilled from defaults" {
+        val configFile = getResourceFile("fulfill-from-defaults.conf")
+        val result = useCase.read(configFile)
+
+        result.isRight() shouldBe true
+
+        when (result) {
+            is Either.Right -> {
+                val firstProfile = result.b.profiles.first()
+                firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+                firstProfile.keepCopies shouldBe 7
+                firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+            }
             is Either.Left -> throw Exception("assert error")
         }
     }
