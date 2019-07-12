@@ -9,6 +9,8 @@ data class Profile(
 
     val keepCopies: Int,
 
+    val itemValidationConfig: ItemValidationConfig,
+
     val cleanAction: CleanAction
 )
 

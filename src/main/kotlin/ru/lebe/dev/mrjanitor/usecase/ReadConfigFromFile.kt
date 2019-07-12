@@ -7,12 +7,11 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.AppConfig
 import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.ItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.util.Defaults
-import ru.lebe.dev.mrjanitor.util.Defaults.DEFAULT_KEEP_COPIES
-import ru.lebe.dev.mrjanitor.util.Defaults.DEFAULT_STORAGE_UNIT
 import ru.lebe.dev.mrjanitor.util.getInt
 import ru.lebe.dev.mrjanitor.util.getString
 import java.io.File
@@ -29,8 +28,17 @@ class ReadConfigFromFile {
             try {
                 val config = ConfigFactory.parseFile(file).getConfig("config")
 
-                when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME,
-                                                      DEFAULT_STORAGE_UNIT, DEFAULT_KEEP_COPIES)) {
+                val internalDefaultProfile = Profile(
+                    name = "defaults",
+                    path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
+                    keepCopies = Defaults.DEFAULT_KEEP_COPIES,
+                    itemValidationConfig = ItemValidationConfig(
+                        md5FileCheck = true, zipTest = true, logFileExists = true, qtyAtLeastAsPreviousValid = true
+                    ),
+                    cleanAction = CleanAction.JUST_NOTIFY
+                )
+
+                when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME, internalDefaultProfile)) {
                     is Either.Right -> {
 
                         when(val profiles = loadProfiles(config, defaultProfile.b)) {
@@ -74,8 +82,7 @@ class ReadConfigFromFile {
             var profileLoadError = false
 
             config.getStringList("profiles").forEach { profileName ->
-                when(val profile = loadProfile(config, profileName,
-                                               defaultProfile.storageUnit, defaultProfile.keepCopies)) {
+                when(val profile = loadProfile(config, profileName, defaultProfile)) {
                     is Either.Right -> {
 
                         if (isProfileValid(profile.b)) {
@@ -104,44 +111,6 @@ class ReadConfigFromFile {
             Either.left(OperationResult.ERROR)
         }
 
-    private fun loadProfile(config: Config, profileName: String,
-                            defaultStorageUnit: StorageUnit, defaultKeepCopies: Int): Either<OperationResult, Profile> =
-
-        if (config.hasPath(profileName)) {
-            Either.right(
-                Profile(
-                    name = profileName,
-                    path = config.getString("$profileName.path", ""),
-                    storageUnit = getStorageUnit(config, profileName, defaultStorageUnit),
-                    keepCopies = config.getInt("$profileName.keep-copies", defaultKeepCopies),
-                    cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
-                )
-            )
-
-        } else {
-            log.error("profile '$profileName' wasn't found at path '$profileName'")
-            Either.left(OperationResult.ERROR)
-        }
-
-    private fun getCleanAction(config: Config, profilePath: String, defaultValue: CleanAction): CleanAction =
-        if (config.hasPath("$profilePath.action")) {
-            when(config.getString("$profilePath.action")) {
-                "compress" -> CleanAction.COMPRESS
-                "remove" -> CleanAction.REMOVE
-                else -> defaultValue
-            }
-
-        } else {
-            defaultValue
-        }
-
-    private fun getStorageUnit(config: Config, profilePath: String, defaultValue: StorageUnit): StorageUnit =
-        when(config.getString("$profilePath.unit", "")) {
-            "directory" -> StorageUnit.DIRECTORY
-            "file" -> StorageUnit.FILE
-            else -> defaultValue
-        }
-
     private fun isProfileValid(profile: Profile): Boolean {
         var result = true
 
@@ -157,5 +126,80 @@ class ReadConfigFromFile {
 
         return result
     }
+
+    private fun loadProfile(config: Config, profileName: String,
+                            defaultProfile: Profile): Either<OperationResult, Profile> =
+
+        if (config.hasPath(profileName)) {
+            Either.right(
+                Profile(
+                    name = profileName,
+                    path = config.getString("$profileName.path", ""),
+                    storageUnit = getStorageUnit(config, profileName, defaultProfile.storageUnit),
+                    keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
+                    itemValidationConfig = getItemValidationConfig(
+                        config, "$profileName.item-validation", defaultProfile.itemValidationConfig
+                    ),
+                    cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
+                )
+            )
+
+        } else {
+            log.error("profile '$profileName' wasn't found at path '$profileName'")
+            Either.left(OperationResult.ERROR)
+        }
+
+    private fun getItemValidationConfig(config: Config, sectionPath: String,
+                                        defaultValidationConfig: ItemValidationConfig): ItemValidationConfig {
+
+        return if (config.hasPath(sectionPath)) {
+
+            ItemValidationConfig(
+                md5FileCheck = getBooleanPropertyValue(
+                    config, "$sectionPath.md5-file-check", defaultValidationConfig.md5FileCheck
+                ),
+                zipTest = getBooleanPropertyValue(
+                    config, "$sectionPath.zip-test", defaultValidationConfig.zipTest
+                ),
+                logFileExists = getBooleanPropertyValue(
+                    config, "$sectionPath.log-file-exists", defaultValidationConfig.logFileExists
+                ),
+                qtyAtLeastAsPreviousValid = getBooleanPropertyValue(
+                    config, "$sectionPath.qty-at-least-as-previous-valid",
+                    defaultValidationConfig.qtyAtLeastAsPreviousValid
+                )
+            )
+
+        } else {
+            defaultValidationConfig
+        }
+    }
+
+    private fun getBooleanPropertyValue(config: Config, propertyPath: String, defaultValue: Boolean): Boolean =
+        if (config.hasPath(propertyPath)) {
+            config.getBoolean(propertyPath)
+
+        } else {
+            defaultValue
+        }
+
+    private fun getStorageUnit(config: Config, profilePath: String, defaultValue: StorageUnit): StorageUnit =
+        when(config.getString("$profilePath.unit", "")) {
+            "directory" -> StorageUnit.DIRECTORY
+            "file" -> StorageUnit.FILE
+            else -> defaultValue
+        }
+
+    private fun getCleanAction(config: Config, profilePath: String, defaultValue: CleanAction): CleanAction =
+        if (config.hasPath("$profilePath.action")) {
+            when(config.getString("$profilePath.action")) {
+                "compress" -> CleanAction.COMPRESS
+                "remove" -> CleanAction.REMOVE
+                else -> defaultValue
+            }
+
+        } else {
+            defaultValue
+        }
 
 }

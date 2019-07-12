@@ -33,6 +33,12 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.keepCopies shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
+                val itemValidationConfig1 = firstProfile.itemValidationConfig
+                itemValidationConfig1.md5FileCheck shouldBe false
+                itemValidationConfig1.zipTest shouldBe true
+                itemValidationConfig1.logFileExists shouldBe true
+                itemValidationConfig1.qtyAtLeastAsPreviousValid shouldBe true
+
                 val lastProfile = result.b.profiles.last()
 
                 lastProfile.name shouldBe "nginx-logs"
@@ -40,6 +46,12 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.storageUnit shouldBe StorageUnit.FILE
                 lastProfile.keepCopies shouldBe 14
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
+
+                val itemValidationConfig2 = lastProfile.itemValidationConfig
+                itemValidationConfig2.md5FileCheck shouldBe true
+                itemValidationConfig2.zipTest shouldBe false
+                itemValidationConfig2.logFileExists shouldBe false
+                itemValidationConfig2.qtyAtLeastAsPreviousValid shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -94,6 +106,12 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
                 firstProfile.keepCopies shouldBe 7
                 firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+
+                val itemValidationConfig = firstProfile.itemValidationConfig
+                itemValidationConfig.md5FileCheck shouldBe true
+                itemValidationConfig.zipTest shouldBe false
+                itemValidationConfig.logFileExists shouldBe false
+                itemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
