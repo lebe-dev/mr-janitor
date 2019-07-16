@@ -55,11 +55,13 @@ internal class CreateFileIndexTest {
                 assertTrue(results.b.directoryItems.isEmpty())
 
                 val firstItem = results.b.fileItems.first()
+                assertEquals(Paths.get(indexPath.toString(), firstItem.name).toString(), firstItem.path.toString())
                 assertEquals(firstFile.name, firstItem.name)
                 assertEquals(firstFile.length(), firstItem.size)
                 assertEquals(firstFileHash, firstItem.hash)
 
                 val secondItem = results.b.fileItems.last()
+                assertEquals(Paths.get(indexPath.toString(), secondItem.name).toString(), secondItem.path.toString())
                 assertEquals(secondItem.name, secondFile.name)
                 assertEquals(secondFile.length(), secondItem.size)
                 assertEquals(secondFileHash, secondItem.hash)
@@ -100,6 +102,10 @@ internal class CreateFileIndexTest {
                 assertEquals(firstFile.length(), firstDirectory.size)
 
                 val firstDirectoryFileItem = firstDirectory.fileItems.first()
+                assertEquals(
+                    Paths.get(firstSubDirectory.toString(), firstFile.name).toString(),
+                    firstDirectoryFileItem.path.toString()
+                )
                 assertEquals(firstFile.name, firstDirectoryFileItem.name)
                 assertEquals(firstFile.length(), firstDirectoryFileItem.size)
                 assertEquals(firstFileHash, firstDirectoryFileItem.hash)
@@ -110,6 +116,10 @@ internal class CreateFileIndexTest {
                 assertEquals(secondFile.length(), secondDirectory.size)
 
                 val secondDirectoryFileItem = secondDirectory.fileItems.first()
+                assertEquals(
+                    Paths.get(secondSubDirectory.toString(), secondFile.name).toString(),
+                    secondDirectoryFileItem.path.toString()
+                )
                 assertEquals(secondFile.name, secondDirectoryFileItem.name)
                 assertEquals(secondFile.length(), secondDirectoryFileItem.size)
                 assertEquals(secondFileHash, secondDirectoryFileItem.hash)

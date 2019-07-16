@@ -102,6 +102,7 @@ class CreateFileIndex {
 
         path.toFile().listFiles()?.filter { it.isFile }?.forEach { file ->
             results += FileItem(
+                path = file.absoluteFile.toPath(),
                 name = file.name,
                 size = file.length(),
                 hash = file.inputStream().use { DigestUtils.md5Hex(it) }
