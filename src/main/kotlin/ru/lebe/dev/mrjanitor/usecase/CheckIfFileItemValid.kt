@@ -2,7 +2,7 @@ package ru.lebe.dev.mrjanitor.usecase
 
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.domain.ItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -11,7 +11,7 @@ import java.util.zip.ZipFile
 class CheckIfFileItemValid {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun isValid(fileItem: FileItem, validationConfig: ItemValidationConfig): Boolean {
+    fun isValid(fileItem: FileItem, validationConfig: FileItemValidationConfig): Boolean {
         log.info("check if file-item valid: '${fileItem.path}'")
         log.debug(fileItem.toString())
         log.info("validation config:")

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.domain.ItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
 import java.io.File
 import java.nio.file.Files
@@ -23,13 +23,13 @@ internal class CheckIfFileItemValidTest {
 
     private val sampleFileName = "sample-file"
 
-    private val validationConfig = ItemValidationConfig(
-        md5FileCheck = false, zipTest = false, logFileExists = false, qtyAtLeastAsPreviousValid = false
+    private val validationConfig = FileItemValidationConfig(
+        md5FileCheck = false, zipTest = false, logFileExists = false
     )
 
-    private val checkAllValidationConfig = ItemValidationConfig(
+    private val checkAllValidationConfig = FileItemValidationConfig(
         md5FileCheck = true, zipTest = true,
-        logFileExists = true, qtyAtLeastAsPreviousValid = true
+        logFileExists = true
     )
 
     private val md5ValidationConfig = validationConfig.copy(md5FileCheck = true)
@@ -116,8 +116,7 @@ internal class CheckIfFileItemValidTest {
             useCase.isValid(
                 fileItem,
                 validationConfig.copy(
-                    md5FileCheck = true, logFileExists = true,
-                    zipTest = true, qtyAtLeastAsPreviousValid = true
+                    md5FileCheck = true, logFileExists = true, zipTest = true
                 )
             )
         )

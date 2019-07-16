@@ -33,11 +33,12 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.keepCopies shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
-                val itemValidationConfig1 = firstProfile.itemValidationConfig
-                itemValidationConfig1.md5FileCheck shouldBe false
-                itemValidationConfig1.zipTest shouldBe true
-                itemValidationConfig1.logFileExists shouldBe true
-                itemValidationConfig1.qtyAtLeastAsPreviousValid shouldBe true
+                val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
+                fileItemValidationConfig1.md5FileCheck shouldBe false
+                fileItemValidationConfig1.zipTest shouldBe true
+                fileItemValidationConfig1.logFileExists shouldBe true
+
+                firstProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
 
                 val lastProfile = result.b.profiles.last()
 
@@ -47,11 +48,12 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.keepCopies shouldBe 14
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
-                val itemValidationConfig2 = lastProfile.itemValidationConfig
-                itemValidationConfig2.md5FileCheck shouldBe true
-                itemValidationConfig2.zipTest shouldBe false
-                itemValidationConfig2.logFileExists shouldBe false
-                itemValidationConfig2.qtyAtLeastAsPreviousValid shouldBe false
+                val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
+                fileItemValidationConfig2.md5FileCheck shouldBe true
+                fileItemValidationConfig2.zipTest shouldBe false
+                fileItemValidationConfig2.logFileExists shouldBe false
+
+                lastProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -77,6 +79,9 @@ class ReadConfigFromFileTest: StringSpec({
                 result.b.defaultProfile.path.isBlank() shouldBe true
                 result.b.defaultProfile.keepCopies shouldBe 7
                 result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+
+                result.b.defaultProfile.directoryItemValidationConfig
+                                       .qtyAtLeastAsPreviousValid shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -107,11 +112,12 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.keepCopies shouldBe 7
                 firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
 
-                val itemValidationConfig = firstProfile.itemValidationConfig
-                itemValidationConfig.md5FileCheck shouldBe true
-                itemValidationConfig.zipTest shouldBe false
-                itemValidationConfig.logFileExists shouldBe false
-                itemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
+                val fileItemValidationConfig = firstProfile.fileItemValidationConfig
+                fileItemValidationConfig.md5FileCheck shouldBe true
+                fileItemValidationConfig.zipTest shouldBe false
+                fileItemValidationConfig.logFileExists shouldBe false
+
+                firstProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }

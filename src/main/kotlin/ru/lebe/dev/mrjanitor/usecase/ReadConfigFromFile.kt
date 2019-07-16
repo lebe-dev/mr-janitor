@@ -5,12 +5,8 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.AppConfig
-import ru.lebe.dev.mrjanitor.domain.CleanAction
-import ru.lebe.dev.mrjanitor.domain.ItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationResult
-import ru.lebe.dev.mrjanitor.domain.Profile
-import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.domain.*
+import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.getInt
 import ru.lebe.dev.mrjanitor.util.getString
@@ -32,8 +28,11 @@ class ReadConfigFromFile {
                     name = "defaults",
                     path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
                     keepCopies = Defaults.DEFAULT_KEEP_COPIES,
-                    itemValidationConfig = ItemValidationConfig(
-                        md5FileCheck = true, zipTest = true, logFileExists = true, qtyAtLeastAsPreviousValid = true
+                    fileItemValidationConfig = FileItemValidationConfig(
+                        md5FileCheck = true, zipTest = true, logFileExists = true
+                    ),
+                    directoryItemValidationConfig = DirectoryItemValidationConfig(
+                        qtyAtLeastAsPreviousValid = true
                     ),
                     cleanAction = CleanAction.JUST_NOTIFY
                 )
@@ -137,8 +136,11 @@ class ReadConfigFromFile {
                     path = config.getString("$profileName.path", ""),
                     storageUnit = getStorageUnit(config, profileName, defaultProfile.storageUnit),
                     keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
-                    itemValidationConfig = getItemValidationConfig(
-                        config, "$profileName.item-validation", defaultProfile.itemValidationConfig
+                    fileItemValidationConfig = getFileItemValidationConfig(
+                        config, "$profileName.item-validation", defaultProfile.fileItemValidationConfig
+                    ),
+                    directoryItemValidationConfig = getDirectoryItemValidationConfig(
+                        config, "$profileName.item-validation", defaultProfile.directoryItemValidationConfig
                     ),
                     cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
                 )
@@ -149,12 +151,12 @@ class ReadConfigFromFile {
             Either.left(OperationResult.ERROR)
         }
 
-    private fun getItemValidationConfig(config: Config, sectionPath: String,
-                                        defaultValidationConfig: ItemValidationConfig): ItemValidationConfig {
+    private fun getFileItemValidationConfig(config: Config, sectionPath: String,
+                                            defaultValidationConfig: FileItemValidationConfig): FileItemValidationConfig {
 
         return if (config.hasPath(sectionPath)) {
 
-            ItemValidationConfig(
+            FileItemValidationConfig(
                 md5FileCheck = getBooleanPropertyValue(
                     config, "$sectionPath.md5-file-check", defaultValidationConfig.md5FileCheck
                 ),
@@ -163,7 +165,20 @@ class ReadConfigFromFile {
                 ),
                 logFileExists = getBooleanPropertyValue(
                     config, "$sectionPath.log-file-exists", defaultValidationConfig.logFileExists
-                ),
+                )
+            )
+
+        } else {
+            defaultValidationConfig
+        }
+    }
+
+    private fun getDirectoryItemValidationConfig(config: Config, sectionPath: String,
+                                defaultValidationConfig: DirectoryItemValidationConfig): DirectoryItemValidationConfig {
+
+        return if (config.hasPath(sectionPath)) {
+
+            DirectoryItemValidationConfig(
                 qtyAtLeastAsPreviousValid = getBooleanPropertyValue(
                     config, "$sectionPath.qty-at-least-as-previous-valid",
                     defaultValidationConfig.qtyAtLeastAsPreviousValid
