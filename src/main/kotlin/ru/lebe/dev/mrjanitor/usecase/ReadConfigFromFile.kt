@@ -32,7 +32,7 @@ class ReadConfigFromFile {
                         md5FileCheck = true, zipTest = true, logFileExists = true
                     ),
                     directoryItemValidationConfig = DirectoryItemValidationConfig(
-                        qtyAtLeastAsPreviousValid = true
+                        qtyAtLeastAsInPreviousItem = true
                     ),
                     cleanAction = CleanAction.JUST_NOTIFY
                 )
@@ -179,9 +179,9 @@ class ReadConfigFromFile {
         return if (config.hasPath(sectionPath)) {
 
             DirectoryItemValidationConfig(
-                qtyAtLeastAsPreviousValid = getBooleanPropertyValue(
+                qtyAtLeastAsInPreviousItem = getBooleanPropertyValue(
                     config, "$sectionPath.qty-at-least-as-previous-valid",
-                    defaultValidationConfig.qtyAtLeastAsPreviousValid
+                    defaultValidationConfig.qtyAtLeastAsInPreviousItem
                 )
             )
 

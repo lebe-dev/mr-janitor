@@ -38,7 +38,7 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig1.zipTest shouldBe true
                 fileItemValidationConfig1.logFileExists shouldBe true
 
-                firstProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
+                firstProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
 
                 val lastProfile = result.b.profiles.last()
 
@@ -53,7 +53,7 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig2.zipTest shouldBe false
                 fileItemValidationConfig2.logFileExists shouldBe false
 
-                lastProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe false
+                lastProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -81,7 +81,7 @@ class ReadConfigFromFileTest: StringSpec({
                 result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
 
                 result.b.defaultProfile.directoryItemValidationConfig
-                                       .qtyAtLeastAsPreviousValid shouldBe true
+                                       .qtyAtLeastAsInPreviousItem shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -117,7 +117,7 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig.zipTest shouldBe false
                 fileItemValidationConfig.logFileExists shouldBe false
 
-                firstProfile.directoryItemValidationConfig.qtyAtLeastAsPreviousValid shouldBe true
+                firstProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
