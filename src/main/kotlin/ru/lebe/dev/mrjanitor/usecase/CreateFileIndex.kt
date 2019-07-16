@@ -82,6 +82,7 @@ class CreateFileIndex {
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
                     results += DirectoryItem(
+                        path = directory.toPath(),
                         name = directory.name,
                         size = directorySize,
                         fileItems = fileItems.value
