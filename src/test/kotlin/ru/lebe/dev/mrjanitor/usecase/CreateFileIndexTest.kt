@@ -9,11 +9,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 
 internal class CreateFileIndexTest {
 
@@ -175,6 +175,4 @@ internal class CreateFileIndexTest {
             is Either.Left -> throw Exception("asser exception")
         }
     }
-
-    private fun getRandomFileData() = UUID.randomUUID().toString()
 }
