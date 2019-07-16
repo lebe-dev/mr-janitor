@@ -21,6 +21,8 @@ dependencies {
     implementation("io.arrow-kt:arrow-core-data:0.9.0")
 
     implementation("com.typesafe:config:1.3.3")
+
+    implementation("commons-codec:commons-codec:1.12")
     
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-api:1.7.25")
