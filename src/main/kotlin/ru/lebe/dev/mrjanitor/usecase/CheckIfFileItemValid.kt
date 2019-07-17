@@ -12,6 +12,7 @@ class CheckIfFileItemValid {
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun isValid(fileItem: FileItem, validationConfig: FileItemValidationConfig): Boolean {
+        log.info("---")
         log.info("check if file-item valid: '${fileItem.path}'")
         log.debug(fileItem.toString())
         log.debug("validation config:")
