@@ -18,6 +18,8 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
+    implementation("com.github.ajalt:clikt:2.1.0")
+
     implementation("io.arrow-kt:arrow-core-data:0.9.0")
 
     implementation("com.typesafe:config:1.3.3")
