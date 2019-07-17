@@ -51,6 +51,9 @@ internal class GetFileItemsForCleanUpTest {
 
         createFilesWithInvalidHash(1)
         createFilesWithAbsentHashFile(1)
+
+        createValidArchiveFiles(2) // GOOD
+
         createInvalidArchiveFiles(2)
 
         createValidArchiveFiles(2) // GOOD
@@ -91,7 +94,7 @@ internal class GetFileItemsForCleanUpTest {
             is Either.Right -> {
                 val validButOldItems = results.b.filter { it.valid }
 
-                assertEquals(2, validButOldItems.size)
+                assertEquals(4, validButOldItems.size)
 
                 val invalidItems = results.b.filter { !it.valid }
                 assertEquals(13, invalidItems.size)
