@@ -12,7 +12,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 internal class CheckIfDirectoryItemValidTest {
 
@@ -75,11 +75,13 @@ internal class CheckIfDirectoryItemValidTest {
     @Test
     fun `Return false if file-items count is lesser than in previous item`() {
         val fileItem1 = FileItem(
-            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val fileItem2 = FileItem(
-            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val directoryItem = DirectoryItem(
@@ -100,11 +102,13 @@ internal class CheckIfDirectoryItemValidTest {
     @Test
     fun `Return true if no special validation methods were selected`() {
         val fileItem1 = FileItem(
-            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val fileItem2 = FileItem(
-            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val directoryItem = DirectoryItem(
@@ -125,11 +129,13 @@ internal class CheckIfDirectoryItemValidTest {
     @Test
     fun `Return true if all validation methods were passed`() {
         val fileItem1 = FileItem(
-            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val fileItem2 = FileItem(
-            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString()
+            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString(),
+            valid = false
         )
 
         val directoryItem = DirectoryItem(

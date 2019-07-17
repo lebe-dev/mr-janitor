@@ -6,7 +6,11 @@ import arrow.core.Success
 import arrow.core.Try
 import org.apache.commons.codec.digest.DigestUtils
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.*
+import ru.lebe.dev.mrjanitor.domain.DirectoryItem
+import ru.lebe.dev.mrjanitor.domain.FileItem
+import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.PathFileIndex
+import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import java.io.IOException
 import java.nio.file.Path
 
@@ -101,12 +105,15 @@ class CreateFileIndex {
     private fun getFileItemsFromPath(path: Path) = Try<List<FileItem>> {
         val results = arrayListOf<FileItem>()
 
-        path.toFile().listFiles()?.filter { it.isFile }?.forEach { file ->
+        path.toFile().listFiles()?.filter { it.isFile }
+                                 ?.filterNot { it.extension.toLowerCase() in listOf("md5", "log") }
+                                 ?.forEach { file ->
             results += FileItem(
                 path = file.absoluteFile.toPath(),
                 name = file.name,
                 size = file.length(),
-                hash = file.inputStream().use { DigestUtils.md5Hex(it) }
+                hash = file.inputStream().use { DigestUtils.md5Hex(it) },
+                valid = false
             )
         }
 

@@ -8,10 +8,11 @@ import java.nio.file.Paths
 import java.util.UUID
 
 object SampleDataProvider {
-    fun getSampleArchiveFileWithCompanions(path: Path, fileBaseName: String, hash: String = ""): Triple<File, File, File> {
+    fun getSampleArchiveFileWithCompanions(path: Path, fileBaseName: String,
+                                           hash: String = ""): Triple<File, File, File> {
         val archiveFileName = "$fileBaseName.zip"
 
-        val referenceArchiveFile = File(javaClass.getResource("/$archiveFileName").toURI())
+        val referenceArchiveFile = File(javaClass.getResource("/sample-archive.zip").toURI())
 
         val resultFile = Paths.get(path.toString(), archiveFileName).toFile()
         referenceArchiveFile.copyTo(resultFile, true)
