@@ -18,6 +18,7 @@ class CheckIfDirectoryItemValid(
                 directoryValidationConfig: DirectoryItemValidationConfig,
                 fileValidationConfig: FileItemValidationConfig): Boolean {
 
+        log.info("---")
         log.info("check if directory-item is valid, path '${directoryItem.path}'")
 
         var result = false
@@ -30,18 +31,28 @@ class CheckIfDirectoryItemValid(
                     DirectoryItem(path = Paths.get("."), name = "", size = 0, fileItems = listOf(), valid = false)
                 }
 
+                log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
+                log.debug("  - files in previous directory: ${previousItem.fileItems.size}")
+
                 if (directoryItem.fileItems.size >= previousItem.fileItems.size) {
+                    log.debug("- directory contains expected file-items count: true")
 
                     result = directoryItem.fileItems.all {
                         checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
                     }
 
+                    log.debug("- all file items are valid: $result")
+
+                } else {
+                    log.debug("- directory contains expected file-items count: false")
                 }
 
             } else {
                 result = directoryItem.fileItems.all {
                     checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
                 }
+
+                log.debug("- all file items are valid: $result")
             }
         }
 
