@@ -14,8 +14,8 @@ class CheckIfFileItemValid {
     fun isValid(fileItem: FileItem, validationConfig: FileItemValidationConfig): Boolean {
         log.info("check if file-item valid: '${fileItem.path}'")
         log.debug(fileItem.toString())
-        log.info("validation config:")
-        log.info(validationConfig.toString())
+        log.debug("validation config:")
+        log.debug(validationConfig.toString())
 
         var result = false
 
@@ -26,22 +26,30 @@ class CheckIfFileItemValid {
             if (validationConfig.md5FileCheck) {
                 result = isMd5CheckSuccess(fileItem)
 
+                log.debug("- md5-hash check success: $result")
+
                 if (!result) { nextCheckLock = true }
             }
 
             if (!nextCheckLock && validationConfig.logFileExists) {
                 result = isLogFileCheckSuccess(fileItem)
 
+                log.debug("- log-file-exists check success: $result")
+
                 if (!result) { nextCheckLock = true }
             }
 
             if (!nextCheckLock && validationConfig.zipTest) {
                 result = isArchiveFileCheckSuccess(fileItem)
+
+                log.debug("- zip-test success: $result")
             }
 
         } else {
             log.error("file item wasn't found at path '${fileItem.path}'")
         }
+
+        log.info("- item valid: $result")
 
         return result
     }
