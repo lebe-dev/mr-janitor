@@ -11,16 +11,13 @@ import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
-import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createLogCompanionFile
-import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createMd5CompanionFile
-import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
-import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
-import java.io.File
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentLogFile
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createInvalidArchiveFiles
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.text.SimpleDateFormat
-import java.util.*
 
 internal class GetFileItemsForCleanUpTest {
 
@@ -31,7 +28,13 @@ internal class GetFileItemsForCleanUpTest {
 
     private lateinit var useCase: GetFileItemsForCleanUp
 
-    private val invalidArchiveFile = File(javaClass.getResource("/invalid-archive.zip").toURI())
+    private val fileItemValidationConfig = FileItemValidationConfig(
+        md5FileCheck = true, zipTest = true, logFileExists = true
+    )
+
+    private val directoryItemValidationConfig = DirectoryItemValidationConfig(
+        qtyAtLeastAsInPreviousItem = true
+    )
 
     @BeforeEach
     fun setUp() {
@@ -47,34 +50,26 @@ internal class GetFileItemsForCleanUpTest {
 
     @Test
     fun `Result list should be equal to keep-copies value`() {
-        createValidArchiveFiles(2)
+        createValidArchiveFiles(indexPath, 2)
 
-        createFilesWithInvalidHash(1)
-        createFilesWithAbsentHashFile(1)
+        createFilesWithInvalidHash(indexPath, 1)
+        createFilesWithAbsentHashFile(indexPath, 1)
 
-        createValidArchiveFiles(2) // GOOD
+        createValidArchiveFiles(indexPath, 2) // GOOD
 
-        createInvalidArchiveFiles(2)
+        createInvalidArchiveFiles(indexPath, 2)
 
-        createValidArchiveFiles(2) // GOOD
+        createValidArchiveFiles(indexPath, 2) // GOOD
 
-        createFilesWithAbsentHashFile(3)
-        createFilesWithAbsentLogFile(2)
+        createFilesWithAbsentHashFile(indexPath, 3)
+        createFilesWithAbsentLogFile(indexPath, 2)
 
-        createValidArchiveFiles(1) // GOOD
+        createValidArchiveFiles(indexPath, 1) // GOOD
 
-        createInvalidArchiveFiles(2)
-        createFilesWithInvalidHash(2)
+        createInvalidArchiveFiles(indexPath, 2)
+        createFilesWithInvalidHash(indexPath, 2)
 
-        createValidArchiveFiles(2) // GOOD
-
-        val fileItemValidationConfig = FileItemValidationConfig(
-            md5FileCheck = true, zipTest = true, logFileExists = true
-        )
-
-        val directoryItemValidationConfig = DirectoryItemValidationConfig(
-            qtyAtLeastAsInPreviousItem = true
-        )
+        createValidArchiveFiles(indexPath, 2) // GOOD
 
         val profile = Profile(
             name = "test",
@@ -104,73 +99,6 @@ internal class GetFileItemsForCleanUpTest {
             }
             is Either.Left -> throw Exception("assert exception")
         }
-    }
-
-    private fun createFilesWithAbsentHashFile(amount: Int): List<File> {
-        val results = arrayListOf<File>()
-
-        for (index in 1..amount) {
-            val (file, hashFile, _) = getSampleArchiveFileWithCompanions(indexPath, getRandomTimeBasedFileName())
-            hashFile.delete()
-            results += file
-        }
-
-        return results
-    }
-
-    private fun createFilesWithInvalidHash(amount: Int): List<File> {
-        val results = arrayListOf<File>()
-
-        for (index in 1..amount) {
-            val (file, hashFile, _) = getSampleArchiveFileWithCompanions(indexPath, getRandomTimeBasedFileName())
-            hashFile.writeText(getRandomFileData())
-            results += file
-        }
-
-        return results
-    }
-
-    private fun createFilesWithAbsentLogFile(amount: Int): List<File> {
-        val results = arrayListOf<File>()
-
-        for (index in 1..amount) {
-            val (file, _, logFile) = getSampleArchiveFileWithCompanions(indexPath, getRandomTimeBasedFileName())
-            logFile.delete()
-            results += file
-        }
-
-        return results
-    }
-
-    private fun createValidArchiveFiles(amount: Int): List<File> {
-        val results = arrayListOf<File>()
-
-        for (index in 1..amount) {
-            val (file, _, _) = getSampleArchiveFileWithCompanions(indexPath, getRandomTimeBasedFileName())
-            results += file
-        }
-
-        return results
-    }
-
-    private fun createInvalidArchiveFiles(amount: Int): List<File> {
-        val results = arrayListOf<File>()
-
-        for (index in 1..amount) {
-            val file = Paths.get(indexPath.toString(), getRandomTimeBasedFileName()).toFile()
-            invalidArchiveFile.copyTo(file, true)
-            createMd5CompanionFile(indexPath, file)
-            createLogCompanionFile(indexPath, file)
-            results += file
-        }
-
-        return results
-    }
-
-    private fun getRandomTimeBasedFileName(): String {
-        val microHash = UUID.randomUUID().toString().take(4)
-
-        return "${SimpleDateFormat("HHmmss-SSS").format(Date())}-$microHash.zip"
     }
 
 }

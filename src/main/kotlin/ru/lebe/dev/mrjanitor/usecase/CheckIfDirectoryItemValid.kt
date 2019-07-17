@@ -1,15 +1,22 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.Option
+import arrow.core.getOrElse
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import java.nio.file.Path
+import java.nio.file.Paths
 
-class CheckIfDirectoryItemValid {
+class CheckIfDirectoryItemValid(
+        private val checkIfFileItemValid: CheckIfFileItemValid
+    ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun isValid(directoryItem: DirectoryItem, previousDirectoryItem: DirectoryItem,
-                validationConfig: DirectoryItemValidationConfig): Boolean {
+    fun isValid(directoryItem: DirectoryItem, previousDirectoryItem: Option<DirectoryItem>,
+                directoryValidationConfig: DirectoryItemValidationConfig,
+                fileValidationConfig: FileItemValidationConfig): Boolean {
 
         log.info("check if directory-item is valid, path '${directoryItem.path}'")
 
@@ -17,10 +24,17 @@ class CheckIfDirectoryItemValid {
 
         if (isBasicValidationSuccess(directoryItem)) {
 
-            if (validationConfig.qtyAtLeastAsInPreviousItem) {
+            if (directoryValidationConfig.qtyAtLeastAsInPreviousItem && previousDirectoryItem.isDefined()) {
 
-                if (directoryItem.fileItems.size >= previousDirectoryItem.fileItems.size) {
-                    result = true
+                val previousItem = previousDirectoryItem.getOrElse {
+                    DirectoryItem(path = Paths.get("."), name = "", size = 0, fileItems = listOf(), valid = false)
+                }
+
+                if (directoryItem.fileItems.size >= previousItem.fileItems.size) {
+
+                    result = directoryItem.fileItems.all {
+                        checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
+                    }
                 }
 
             } else {

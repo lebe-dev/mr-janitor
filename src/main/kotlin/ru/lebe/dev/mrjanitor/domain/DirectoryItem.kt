@@ -6,5 +6,6 @@ data class DirectoryItem(
     val path: Path,
     val name: String,
     val size: Long,
-    val fileItems: List<FileItem>
+    val fileItems: List<FileItem>,
+    val valid: Boolean
 )

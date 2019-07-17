@@ -6,11 +6,7 @@ import arrow.core.Success
 import arrow.core.Try
 import org.apache.commons.codec.digest.DigestUtils
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.DirectoryItem
-import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.domain.OperationResult
-import ru.lebe.dev.mrjanitor.domain.PathFileIndex
-import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.domain.*
 import java.io.IOException
 import java.nio.file.Path
 
@@ -89,7 +85,8 @@ class CreateFileIndex {
                         path = directory.toPath(),
                         name = directory.name,
                         size = directorySize,
-                        fileItems = fileItems.value
+                        fileItems = fileItems.value,
+                        valid = false
                     )
                 }
                 is Failure -> {

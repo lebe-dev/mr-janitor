@@ -1,5 +1,7 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.Either
+import arrow.core.Some
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -7,28 +9,40 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.UUID
+import java.util.*
 
 internal class CheckIfDirectoryItemValidTest {
 
     private lateinit var indexPath: Path
 
+    private val createFileIndex = CreateFileIndex()
+
+    private val checkIfFileItemValid = CheckIfFileItemValid()
+
     private lateinit var useCase: CheckIfDirectoryItemValid
 
-    private val validationConfig = DirectoryItemValidationConfig(
+    private val directoryValidationConfig = DirectoryItemValidationConfig(
         qtyAtLeastAsInPreviousItem = false
+    )
+
+    private val fileItemValidationConfig = FileItemValidationConfig(
+        md5FileCheck = true, zipTest = true, logFileExists = true
     )
 
     @BeforeEach
     fun setUp() {
         indexPath = Files.createTempDirectory("")
 
-        useCase = CheckIfDirectoryItemValid()
+        useCase = CheckIfDirectoryItemValid(checkIfFileItemValid)
     }
 
     @AfterEach
@@ -42,10 +56,15 @@ internal class CheckIfDirectoryItemValidTest {
             path = File("path-does-not-exist").toPath(),
             name = "whatever",
             size = 59235,
-            fileItems = listOf()
+            fileItems = listOf(),
+            valid = false
         )
 
-        assertFalse(useCase.isValid(directoryItem, getPreviousItem(), validationConfig))
+        assertFalse(
+            useCase.isValid(
+                directoryItem, Some(getPreviousItem()), directoryValidationConfig, fileItemValidationConfig
+            )
+        )
     }
 
     @Test
@@ -54,10 +73,15 @@ internal class CheckIfDirectoryItemValidTest {
             path = indexPath,
             name = "whatever",
             size = 0,
-            fileItems = listOf()
+            fileItems = listOf(),
+            valid = false
         )
 
-        assertFalse(useCase.isValid(directoryItem, getPreviousItem(), validationConfig))
+        assertFalse(
+            useCase.isValid(
+                directoryItem, Some(getPreviousItem()), directoryValidationConfig, fileItemValidationConfig
+            )
+        )
     }
 
     @Test
@@ -66,10 +90,15 @@ internal class CheckIfDirectoryItemValidTest {
             path = indexPath,
             name = "whatever",
             size = 124124,
-            fileItems = listOf()
+            fileItems = listOf(),
+            valid = false
         )
 
-        assertFalse(useCase.isValid(directoryItem, getPreviousItem(), validationConfig))
+        assertFalse(
+            useCase.isValid(
+                directoryItem, Some(getPreviousItem()), directoryValidationConfig, fileItemValidationConfig
+            )
+        )
     }
 
     @Test
@@ -88,13 +117,15 @@ internal class CheckIfDirectoryItemValidTest {
             path = indexPath,
             name = "whatever",
             size = 124124,
-            fileItems = listOf(fileItem1)
+            fileItems = listOf(fileItem1),
+            valid = false
         )
 
         assertFalse(
             useCase.isValid(
-                directoryItem, getPreviousItem(fileItems = listOf(fileItem2, fileItem1)),
-                validationConfig.copy(qtyAtLeastAsInPreviousItem = true)
+                directoryItem, Some(getPreviousItem(fileItems = listOf(fileItem2, fileItem1))),
+                directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                fileItemValidationConfig
             )
         )
     }
@@ -115,42 +146,74 @@ internal class CheckIfDirectoryItemValidTest {
             path = indexPath,
             name = "whatever",
             size = 124124,
-            fileItems = listOf(fileItem1)
+            fileItems = listOf(fileItem1),
+            valid = false
         )
 
         assertTrue(
             useCase.isValid(
-                directoryItem, getPreviousItem(fileItems = listOf(fileItem2, fileItem1)),
-                validationConfig.copy(qtyAtLeastAsInPreviousItem = false)
+                directoryItem, Some(getPreviousItem(fileItems = listOf(fileItem2, fileItem1))),
+                directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = false),
+                fileItemValidationConfig
             )
         )
     }
 
     @Test
     fun `Return true if all validation methods were passed`() {
-        val fileItem1 = FileItem(
-            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString(),
-            valid = false
-        )
+        val directoryName1 = "2019-07-13"
 
-        val fileItem2 = FileItem(
-            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString(),
-            valid = false
-        )
+        var dirTotalSize1 = 0
 
-        val directoryItem = DirectoryItem(
-            path = indexPath,
-            name = "whatever",
-            size = 124124,
-            fileItems = listOf(fileItem1, fileItem2)
-        )
+        val directory1 = createDirectory(indexPath, directoryName1) { directoryPath ->
+            val files = createValidArchiveFiles(directoryPath, 3)
 
-        assertTrue(
-            useCase.isValid(
-                directoryItem, getPreviousItem(fileItems = listOf(fileItem1)),
-                validationConfig.copy(qtyAtLeastAsInPreviousItem = true)
-            )
-        )
+            dirTotalSize1 = files.sumBy { it.length().toInt() }
+        }
+
+        val directoryName2 = "2019-07-14"
+
+        var dirTotalSize2 = 0
+
+        val directory2 = createDirectory(indexPath, directoryName2) { directoryPath ->
+            val files = createValidArchiveFiles(directoryPath, 5)
+            dirTotalSize2 = files.sumBy { it.length().toInt() }
+        }
+
+        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+
+        assertTrue(pathIndex.isRight())
+
+        when(pathIndex) {
+            is Either.Right -> {
+
+                val directoryItem = DirectoryItem(
+                    path = directory2.toPath(),
+                    name = directoryName2,
+                    size = dirTotalSize2.toLong(),
+                    fileItems = pathIndex.b.directoryItems.last().fileItems,
+                    valid = true
+                )
+
+                val previousDirectoryItem = DirectoryItem(
+                    path = directory1.toPath(),
+                    name = directoryName1,
+                    size = dirTotalSize1.toLong(),
+                    fileItems = pathIndex.b.directoryItems.first().fileItems,
+                    valid = true
+                )
+
+                assertTrue(
+                    useCase.isValid(
+                        directoryItem, Some(previousDirectoryItem),
+                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                        fileItemValidationConfig
+                    )
+                )
+
+            }
+            is Either.Left -> throw Exception("assert error")
+        }
     }
 
     private fun getPreviousItem(path: Path = indexPath, size: Long = 12345L,
@@ -158,6 +221,7 @@ internal class CheckIfDirectoryItemValidTest {
         path = path,
         name = "whatever",
         size = size,
-        fileItems = fileItems
+        fileItems = fileItems,
+        valid = false
     )
 }

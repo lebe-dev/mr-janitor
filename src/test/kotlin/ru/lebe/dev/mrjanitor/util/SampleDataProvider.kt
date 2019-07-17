@@ -5,7 +5,8 @@ import ru.lebe.dev.mrjanitor.domain.FileItem
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.UUID
+import java.text.SimpleDateFormat
+import java.util.*
 
 object SampleDataProvider {
     fun getSampleArchiveFileWithCompanions(path: Path, fileBaseName: String,
@@ -34,14 +35,88 @@ object SampleDataProvider {
         return Paths.get(path.toString(), "${sourceFile.name}.md5").toFile().apply { writeText(hashValue) }
     }
 
-    fun createLogCompanionFile(path: Path, sourceFile: File): File {
-        return Paths.get(path.toString(), "${sourceFile.name}.log").toFile()
+    fun createLogCompanionFile(path: Path, sourceFile: File) =
+        Paths.get(path.toString(), "${sourceFile.name}.log").toFile()
             .apply { writeText(TestUtils.getRandomFileData()) }
-    }
 
     fun getFileItem(sampleFile: File, hash: String = UUID.randomUUID().toString()) =
         FileItem(
             path = sampleFile.toPath(), name = sampleFile.name,
             size = sampleFile.length(), hash = hash, valid = false
         )
+
+    fun createFilesWithAbsentHashFile(path: Path, amount: Int): List<File> {
+        val results = arrayListOf<File>()
+
+        for (index in 1..amount) {
+            val (file, hashFile, _) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
+            hashFile.delete()
+            results += file
+        }
+
+        return results
+    }
+
+    fun createFilesWithInvalidHash(path: Path, amount: Int): List<File> {
+        val results = arrayListOf<File>()
+
+        for (index in 1..amount) {
+            val (file, hashFile, _) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
+            hashFile.writeText(TestUtils.getRandomFileData())
+            results += file
+        }
+
+        return results
+    }
+
+    fun createFilesWithAbsentLogFile(path: Path, amount: Int): List<File> {
+        val results = arrayListOf<File>()
+
+        for (index in 1..amount) {
+            val (file, _, logFile) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
+            logFile.delete()
+            results += file
+        }
+
+        return results
+    }
+
+    fun createValidArchiveFiles(path: Path, amount: Int): List<File> {
+        val results = arrayListOf<File>()
+
+        for (index in 1..amount) {
+            val (file, _, _) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
+            results += file
+        }
+
+        return results
+    }
+
+    fun createInvalidArchiveFiles(path: Path, amount: Int): List<File> {
+        val invalidArchiveFile = File(javaClass.getResource("/invalid-archive.zip").toURI())
+
+        val results = arrayListOf<File>()
+
+        for (index in 1..amount) {
+            val file = Paths.get(path.toString(), getRandomTimeBasedFileName()).toFile()
+            invalidArchiveFile.copyTo(file, true)
+            createMd5CompanionFile(path, file)
+            createLogCompanionFile(path, file)
+            results += file
+        }
+
+        return results
+    }
+
+    fun createDirectory(path: Path, directoryName: String, body: (Path) -> Unit): File {
+        val directory = Paths.get(path.toString(), directoryName).apply { toFile().mkdirs() }
+        body(directory)
+        return directory.toFile()
+    }
+
+    fun getRandomTimeBasedFileName(): String {
+        val microHash = UUID.randomUUID().toString().take(4)
+
+        return "${SimpleDateFormat("HHmmss-SSS").format(Date())}-$microHash.zip"
+    }
 }
