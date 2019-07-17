@@ -19,17 +19,23 @@ class CheckIfFileItemValid {
 
         var result = false
 
+        var nextCheckLock = false
+
         if (fileItem.path.toFile().exists()) {
 
             if (validationConfig.md5FileCheck) {
                 result = isMd5CheckSuccess(fileItem)
+
+                if (!result) { nextCheckLock = true }
             }
 
-            if (validationConfig.logFileExists) {
+            if (!nextCheckLock && validationConfig.logFileExists) {
                 result = isLogFileCheckSuccess(fileItem)
+
+                if (!result) { nextCheckLock = true }
             }
 
-            if (validationConfig.zipTest) {
+            if (!nextCheckLock && validationConfig.zipTest) {
                 result = isArchiveFileCheckSuccess(fileItem)
             }
 

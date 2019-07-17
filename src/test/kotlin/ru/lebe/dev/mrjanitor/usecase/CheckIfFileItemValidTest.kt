@@ -13,7 +13,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 internal class CheckIfFileItemValidTest {
 
@@ -21,7 +21,7 @@ internal class CheckIfFileItemValidTest {
 
     private lateinit var useCase: CheckIfFileItemValid
 
-    private val sampleFileName = "sample-file"
+    private val sampleFileName = "sample-archive"
 
     private val validationConfig = FileItemValidationConfig(
         md5FileCheck = false, zipTest = false, logFileExists = false
@@ -59,72 +59,89 @@ internal class CheckIfFileItemValidTest {
 
     @Test
     fun `Return true if file-item passes md5-file hash check`() {
-        val (sampleFile, hashFile) = createSampleFileWithHashCompanion()
+        val (archiveFile, hashFile, _) = getSampleArchiveFileWithCompanions()
 
-        val fileItem = getFileItem(sampleFile, hashFile.readText())
+        val fileItem = getFileItem(archiveFile, hashFile.readText())
 
         assertTrue(useCase.isValid(fileItem, md5ValidationConfig))
     }
 
     @Test
     fun `Md5-hash check - return false if hash file wasn't found`() {
-        val (sampleFile,hashFile) = createSampleFileWithHashCompanion()
+        val (archiveFile, hashFile, _) = getSampleArchiveFileWithCompanions()
         hashFile.delete()
 
-        val fileItem = getFileItem(sampleFile)
+        val fileItem = getFileItem(archiveFile)
 
         assertFalse(useCase.isValid(fileItem, md5ValidationConfig))
     }
 
     @Test
     fun `Md5-hash check - return false if hash from md5-file doesn't equal with file-item hash`() {
-        val (sampleFile,_) = createSampleFileWithHashCompanion()
-        val fileItem = getFileItem(sampleFile)
+        val (archiveFile, _, _) = getSampleArchiveFileWithCompanions()
+        val fileItem = getFileItem(archiveFile)
         assertFalse(useCase.isValid(fileItem, md5ValidationConfig))
     }
 
     @Test
     fun `Log-file check - return false if log file doesn't exists`() {
-        val (sampleFile, logFile) = createSampleFileWithLogCompanion()
+        val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions()
 
         logFile.delete()
 
-        val fileItem = getFileItem(sampleFile)
+        val fileItem = getFileItem(archiveFile)
 
         assertFalse(useCase.isValid(fileItem, logFileValidationConfig))
     }
 
     @Test
     fun `Log-file check - return false if log file has zero size`() {
-        val (sampleFile, logFile) = createSampleFileWithLogCompanion()
+        val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions()
 
         logFile.delete()
         logFile.createNewFile()
 
-        val fileItem = getFileItem(sampleFile)
+        val fileItem = getFileItem(archiveFile)
 
         assertFalse(useCase.isValid(fileItem, logFileValidationConfig))
     }
 
     @Test
     fun `Return false if at least one check has been failure`() {
-        val (sampleFile,hashFile) = createSampleFileWithHashCompanion()
+        // Without md5 file
+        val (archiveFile, hashFile, _) = getSampleArchiveFileWithCompanions()
+        hashFile.delete()
+        val fileItem = getFileItem(archiveFile)
 
-        val fileItem = getFileItem(sampleFile, hashFile.readText())
+        assertFalse(useCase.isValid(fileItem, checkAllValidationConfig))
 
-        assertFalse(
-            useCase.isValid(
-                fileItem,
-                validationConfig.copy(
-                    md5FileCheck = true, logFileExists = true, zipTest = true
-                )
-            )
-        )
+        // Without log file
+        val (archiveFile2, hashFile2, logFile2) = getSampleArchiveFileWithCompanions()
+        logFile2.delete()
+        val fileItem2 = getFileItem(archiveFile2, hashFile2.readText())
+
+        assertFalse(useCase.isValid(fileItem2, checkAllValidationConfig))
+
+        // Log file has zero size
+        val (archiveFile3, hashFile3, logFile3) = getSampleArchiveFileWithCompanions()
+        logFile3.delete()
+        logFile3.createNewFile()
+        val fileItem3 = getFileItem(archiveFile3, hashFile3.readText())
+
+        assertFalse(useCase.isValid(fileItem3, checkAllValidationConfig))
+
+        // Invalid archive file
+        val invalidArchiveFile = File(javaClass.getResource("/invalid-archive.zip").toURI())
+        val hashFile4 = createMd5CompanionFile(indexPath, invalidArchiveFile)
+        createLogCompanionFile(indexPath, invalidArchiveFile)
+
+        val fileItem4 = getFileItem(invalidArchiveFile, hashFile4.readText())
+        assertFalse(useCase.isValid(fileItem4, checkAllValidationConfig))
     }
 
     @Test
     fun `Zip-archive check - return true if zip file is valid`() {
-        val archiveFile = getSampleArchiveFile()
+        val (archiveFile, _, _) = getSampleArchiveFileWithCompanions()
         val fileItem = getFileItem(archiveFile)
 
         assertTrue(useCase.isValid(fileItem, validationConfig.copy(zipTest = true)))
@@ -141,7 +158,7 @@ internal class CheckIfFileItemValidTest {
 
     @Test
     fun `Return true if all checks are passed`() {
-        val archiveFile = getSampleArchiveFile()
+        val (archiveFile, _, _) = getSampleArchiveFileWithCompanions()
 
         val md5Hash = archiveFile.inputStream().use { DigestUtils.md5Hex(it) }
 
@@ -153,41 +170,39 @@ internal class CheckIfFileItemValidTest {
         assertTrue(useCase.isValid(fileItem, checkAllValidationConfig))
     }
 
-    private fun createSampleFileWithHashCompanion(): Pair<File, File> {
-        val sampleFile = Paths.get(indexPath.toString(), sampleFileName)
-            .apply { toFile().writeText(randomFileContent) }.toFile()
+    private fun getSampleArchiveFileWithCompanions(hash: String = ""): Triple<File, File, File> {
+        val archiveFileName = "$sampleFileName.zip"
 
-        val sampleFileHash = sampleFile.inputStream().use { DigestUtils.md5Hex(it) }
+        val referenceArchiveFile = File(javaClass.getResource("/$archiveFileName").toURI())
 
-        val hashFile = Paths.get(indexPath.toString(), "$sampleFileName.md5")
-                            .apply { toFile().writeText(sampleFileHash) }.toFile()
-
-        return Pair(sampleFile, hashFile)
-    }
-
-    private fun createSampleFileWithLogCompanion(): Pair<File, File> {
-        val sampleFile = Paths.get(indexPath.toString(), sampleFileName)
-            .apply { toFile().writeText(randomFileContent) }.toFile()
-
-        val logFile = Paths.get(indexPath.toString(), "$sampleFileName.log")
-            .apply { toFile().writeText(randomFileContent) }.toFile()
-
-        return Pair(sampleFile, logFile)
-    }
-
-    private fun getSampleArchiveFile(): File {
-        val referenceArchiveFile = File(javaClass.getResource("/sample-archive.zip").toURI())
-
-        val resultFile = Paths.get(indexPath.toString(), "sample-archive.zip").toFile()
-
+        val resultFile = Paths.get(indexPath.toString(), archiveFileName).toFile()
         referenceArchiveFile.copyTo(resultFile, true)
 
-        return resultFile
+        return Triple(
+            resultFile, createMd5CompanionFile(indexPath, resultFile, hash),
+            createLogCompanionFile(indexPath, resultFile)
+        )
+    }
+
+    private fun createMd5CompanionFile(path: Path, sourceFile: File, hash: String = ""): File {
+        val hashValue = if (hash.isBlank()) {
+            sourceFile.inputStream().use { DigestUtils.md5Hex(it) }
+
+        } else {
+            getRandomFileData()
+        }
+
+        return Paths.get(path.toString(), "${sourceFile.name}.md5").toFile().apply { writeText(hashValue) }
+    }
+
+    private fun createLogCompanionFile(path: Path, sourceFile: File): File {
+        return Paths.get(path.toString(), "${sourceFile.name}.log").toFile()
+                    .apply { writeText(getRandomFileData()) }
     }
 
     private fun getFileItem(sampleFile: File, hash: String = UUID.randomUUID().toString()) =
         FileItem(
             path = sampleFile.toPath(), name = sampleFile.name,
-            size = sampleFile.length(), hash = hash
+            size = sampleFile.length(), hash = hash, valid = false
         )
 }
