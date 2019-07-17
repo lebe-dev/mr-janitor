@@ -35,10 +35,13 @@ class CheckIfDirectoryItemValid(
                     result = directoryItem.fileItems.all {
                         checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
                     }
+
                 }
 
             } else {
-                result = true
+                result = directoryItem.fileItems.all {
+                    checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
+                }
             }
         }
 

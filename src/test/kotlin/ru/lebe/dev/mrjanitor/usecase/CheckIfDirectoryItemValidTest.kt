@@ -1,6 +1,7 @@
 package ru.lebe.dev.mrjanitor.usecase
 
 import arrow.core.Either
+import arrow.core.None
 import arrow.core.Some
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -13,6 +14,7 @@ import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
 import java.io.File
 import java.nio.file.Files
@@ -132,31 +134,42 @@ internal class CheckIfDirectoryItemValidTest {
 
     @Test
     fun `Return true if no special validation methods were selected`() {
-        val fileItem1 = FileItem(
-            path = Paths.get("."), name = "whehehee", size = 123, hash = UUID.randomUUID().toString(),
-            valid = false
-        )
+        val directoryName = "2019-07-15"
 
-        val fileItem2 = FileItem(
-            path = Paths.get("."), name = "bugaga", size = 73457, hash = UUID.randomUUID().toString(),
-            valid = false
-        )
+        var dirTotalSize = 0
 
-        val directoryItem = DirectoryItem(
-            path = indexPath,
-            name = "whatever",
-            size = 124124,
-            fileItems = listOf(fileItem1),
-            valid = false
-        )
+        val directory = createDirectory(indexPath, directoryName) { directoryPath ->
+            val files = createValidArchiveFiles(directoryPath, 3)
+            val files2 = createFilesWithAbsentHashFile(directoryPath, 1)
 
-        assertTrue(
-            useCase.isValid(
-                directoryItem, Some(getPreviousItem(fileItems = listOf(fileItem2, fileItem1))),
-                directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = false),
-                fileItemValidationConfig
-            )
-        )
+            dirTotalSize += files.sumBy { it.length().toInt() }
+            dirTotalSize += files2.sumBy { it.length().toInt() }
+        }
+
+        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+
+        assertTrue(pathIndex.isRight())
+
+        when(pathIndex) {
+            is Either.Right -> {
+                val directoryItem = DirectoryItem(
+                    path = directory.toPath(),
+                    name = directoryName,
+                    size = dirTotalSize.toLong(),
+                    fileItems = pathIndex.b.directoryItems.last().fileItems,
+                    valid = true
+                )
+
+                assertFalse(
+                    useCase.isValid(
+                        directoryItem, None,
+                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = false),
+                        fileItemValidationConfig
+                    )
+                )
+            }
+            is Either.Left -> throw Exception("assert error")
+        }
     }
 
     @Test
@@ -211,6 +224,46 @@ internal class CheckIfDirectoryItemValidTest {
                     )
                 )
 
+            }
+            is Either.Left -> throw Exception("assert error")
+        }
+    }
+
+    @Test
+    fun `Return false if has at least one invalid file item`() {
+        val directoryName = "2019-07-15"
+
+        var dirTotalSize = 0
+
+        val directory = createDirectory(indexPath, directoryName) { directoryPath ->
+            val files = createValidArchiveFiles(directoryPath, 3)
+            val files2 = createFilesWithAbsentHashFile(directoryPath, 1)
+
+            dirTotalSize += files.sumBy { it.length().toInt() }
+            dirTotalSize += files2.sumBy { it.length().toInt() }
+        }
+
+        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+
+        assertTrue(pathIndex.isRight())
+
+        when(pathIndex) {
+            is Either.Right -> {
+                val directoryItem = DirectoryItem(
+                    path = directory.toPath(),
+                    name = directoryName,
+                    size = dirTotalSize.toLong(),
+                    fileItems = pathIndex.b.directoryItems.last().fileItems,
+                    valid = true
+                )
+
+                assertFalse(
+                    useCase.isValid(
+                        directoryItem, None,
+                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                        fileItemValidationConfig
+                    )
+                )
             }
             is Either.Left -> throw Exception("assert error")
         }
