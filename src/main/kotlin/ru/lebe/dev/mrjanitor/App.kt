@@ -6,7 +6,12 @@ import com.github.ajalt.clikt.core.subcommands
 import ru.lebe.dev.mrjanitor.interactor.CommandLineInteractor
 import ru.lebe.dev.mrjanitor.presenter.AppPresenter
 import ru.lebe.dev.mrjanitor.presenter.CommandLinePresenter
-import ru.lebe.dev.mrjanitor.usecase.*
+import ru.lebe.dev.mrjanitor.usecase.CheckIfDirectoryItemValid
+import ru.lebe.dev.mrjanitor.usecase.CheckIfFileItemValid
+import ru.lebe.dev.mrjanitor.usecase.CreateFileIndex
+import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
+import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
+import ru.lebe.dev.mrjanitor.usecase.ReadConfigFromFile
 import java.io.File
 
 class App {
