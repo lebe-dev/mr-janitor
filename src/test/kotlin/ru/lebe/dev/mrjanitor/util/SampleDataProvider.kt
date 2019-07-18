@@ -2,11 +2,13 @@ package ru.lebe.dev.mrjanitor.util
 
 import org.apache.commons.codec.digest.DigestUtils
 import ru.lebe.dev.mrjanitor.domain.FileItem
+import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 object SampleDataProvider {
     fun getSampleArchiveFileWithCompanions(path: Path, fileBaseName: String,
@@ -24,12 +26,25 @@ object SampleDataProvider {
         )
     }
 
+    fun getSampleFileWithCompanions(path: Path, fileName: String,
+                                    hash: String = "", data: String = ""): Triple<File, File, File> {
+
+        val content = if (data.isBlank()) { getRandomFileData() } else { data }
+
+        val resultFile = Paths.get(path.toString(), fileName).toFile().apply { writeText(content) }
+
+        return Triple(
+            resultFile, createMd5CompanionFile(path, resultFile, hash),
+            createLogCompanionFile(path, resultFile)
+        )
+    }
+
     fun createMd5CompanionFile(path: Path, sourceFile: File, hash: String = ""): File {
         val hashValue = if (hash.isBlank()) {
             sourceFile.inputStream().use { DigestUtils.md5Hex(it) }
 
         } else {
-            TestUtils.getRandomFileData()
+            getRandomFileData()
         }
 
         return Paths.get(path.toString(), "${sourceFile.name}.md5").toFile().apply { writeText(hashValue) }
@@ -37,7 +52,7 @@ object SampleDataProvider {
 
     fun createLogCompanionFile(path: Path, sourceFile: File) =
         Paths.get(path.toString(), "${sourceFile.name}.log").toFile()
-            .apply { writeText(TestUtils.getRandomFileData()) }
+            .apply { writeText(getRandomFileData()) }
 
     fun getFileItem(sampleFile: File, hash: String = UUID.randomUUID().toString()) =
         FileItem(
@@ -62,7 +77,7 @@ object SampleDataProvider {
 
         for (index in 1..amount) {
             val (file, hashFile, _) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
-            hashFile.writeText(TestUtils.getRandomFileData())
+            hashFile.writeText(getRandomFileData())
             results += file
         }
 
@@ -75,6 +90,24 @@ object SampleDataProvider {
         for (index in 1..amount) {
             val (file, _, logFile) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
             logFile.delete()
+            results += file
+        }
+
+        return results
+    }
+
+    fun createRandomJunkFiles(path: Path, amount: Int): List<File> {
+        val results = arrayListOf<File>()
+
+        val names = listOf("seasons", "Random", "eureka", "abc", "manowar", "Giovanni", "hex-01")
+        val extensions = listOf("txt", "png", "jpg", "pdf", "tiff", "avi")
+
+        for (index in 1..amount) {
+            val microHash = UUID.randomUUID()
+
+            val randomFileName = "${names.random()}-$microHash.${extensions.random()}"
+
+            val (file, _, _) = getSampleFileWithCompanions(path, randomFileName)
             results += file
         }
 

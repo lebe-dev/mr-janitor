@@ -16,12 +16,13 @@ import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createRandomJunkFiles
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 internal class CheckIfDirectoryItemValidTest {
 
@@ -184,6 +185,8 @@ internal class CheckIfDirectoryItemValidTest {
         var dirTotalSize1 = 0
 
         val directory1 = createDirectory(indexPath, directoryName1) { directoryPath ->
+            createRandomJunkFiles(directoryPath, 2)
+
             val files = createValidArchiveFiles(directoryPath, 3)
 
             dirTotalSize1 = files.sumBy { it.length().toInt() }
@@ -194,12 +197,14 @@ internal class CheckIfDirectoryItemValidTest {
         var dirTotalSize2 = 0
 
         val directory2 = createDirectory(indexPath, directoryName2) { directoryPath ->
+            createRandomJunkFiles(directoryPath, 3)
+
             val files = createValidArchiveFiles(directoryPath, 5)
             dirTotalSize2 = files.sumBy { it.length().toInt() }
         }
 
         val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+            indexPath, StorageUnit.DIRECTORY, Regex(".*\\.zip$")
         )
 
         assertTrue(pathIndex.isRight())

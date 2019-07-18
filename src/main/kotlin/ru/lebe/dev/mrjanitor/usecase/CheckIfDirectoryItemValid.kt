@@ -23,6 +23,7 @@ class CheckIfDirectoryItemValid(
 
         log.info("---")
         log.info("check if directory-item is valid, path '${directoryItem.path}'")
+        log.debug(directoryItem.toString())
 
         var result = false
 
@@ -33,6 +34,9 @@ class CheckIfDirectoryItemValid(
             if (directoryValidationConfig.qtyAtLeastAsInPreviousItem && previousDirectoryItem.isDefined()) {
 
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
+
+                log.debug("previous-item:")
+                log.debug(previousItem.toString())
 
                 log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
                 log.debug("  - files in previous directory: ${previousItem.fileItems.size}")
@@ -79,6 +83,8 @@ class CheckIfDirectoryItemValid(
 
             }
 
+        } else {
+            log.error("basic validation error")
         }
 
         return result
