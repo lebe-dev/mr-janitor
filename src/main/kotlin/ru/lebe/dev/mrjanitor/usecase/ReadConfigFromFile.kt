@@ -25,45 +25,7 @@ class ReadConfigFromFile {
             try {
                 val config = ConfigFactory.parseFile(file).getConfig("config")
 
-                val internalDefaultProfile = Profile(
-                    name = "defaults",
-                    path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
-                    keepCopies = Defaults.DEFAULT_KEEP_COPIES,
-                    fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
-                    fileItemValidationConfig = FileItemValidationConfig(
-                        fileSizeAtLeastAsPrevious = true,
-                        md5FileCheck = true, zipTest = true, logFileExists = true
-                    ),
-                    directoryItemValidationConfig = DirectoryItemValidationConfig(
-                        fileSizeAtLeastAsPrevious = true, qtyAtLeastAsInPreviousItem = true
-                    ),
-                    cleanAction = CleanAction.JUST_NOTIFY
-                )
-
-                when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME, internalDefaultProfile)) {
-                    is Either.Right -> {
-
-                        when(val profiles = loadProfiles(config, defaultProfile.b)) {
-                            is Either.Right -> {
-                                Either.right(
-                                    AppConfig(
-                                        defaultProfile = defaultProfile.b,
-                                        profiles = profiles.b
-                                    )
-                                )
-                            }
-                            is Either.Left -> {
-                                log.error("unable to load profiles")
-                                Either.left(OperationResult.ERROR)
-                            }
-                        }
-                    }
-                    is Either.Left -> {
-                        log.error("unable to load default profile")
-                        defaultProfile
-                    }
-
-                }
+                getAppConfig(config)
 
             } catch (e: ConfigException.Missing) {
                 log.error("missing property: ${e.message}", e)
@@ -75,6 +37,47 @@ class ReadConfigFromFile {
             Either.left(OperationResult.ERROR)
         }
     }
+
+    private fun getAppConfig(config: Config) =
+        when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME, getInternalDefaultProfile())) {
+            is Either.Right -> {
+
+                when(val profiles = loadProfiles(config, defaultProfile.b)) {
+                    is Either.Right -> {
+                        Either.right(
+                            AppConfig(
+                                defaultProfile = defaultProfile.b,
+                                profiles = profiles.b
+                            )
+                        )
+                    }
+                    is Either.Left -> {
+                        log.error("unable to load profiles")
+                        Either.left(OperationResult.ERROR)
+                    }
+                }
+            }
+            is Either.Left -> {
+                log.error("unable to load default profile")
+                Either.left(OperationResult.ERROR)
+            }
+
+        }
+
+    private fun getInternalDefaultProfile() = Profile(
+        name = "defaults",
+        path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
+        keepCopies = Defaults.DEFAULT_KEEP_COPIES,
+        fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
+        fileItemValidationConfig = FileItemValidationConfig(
+            fileSizeAtLeastAsPrevious = true,
+            md5FileCheck = true, zipTest = true, logFileExists = true
+        ),
+        directoryItemValidationConfig = DirectoryItemValidationConfig(
+            fileSizeAtLeastAsPrevious = true, qtyAtLeastAsInPreviousItem = true
+        ),
+        cleanAction = CleanAction.JUST_NOTIFY
+    )
 
     private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationResult, List<Profile>> =
         if (config.hasPath("profiles")) {
