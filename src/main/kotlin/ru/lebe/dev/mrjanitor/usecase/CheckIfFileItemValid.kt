@@ -1,10 +1,14 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import java.io.File
 import java.io.IOException
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -81,17 +85,45 @@ class CheckIfFileItemValid {
     }
 
     private fun isLogFileCheckSuccess(fileItem: FileItem): Boolean {
+        var result = false
+
         log.debug("log-file existence check")
 
-        val logFile = Paths.get("${fileItem.path}.log").toFile()
+        when(val logFile = findLogFileCompanion(fileItem.path)) {
+            is Some -> {
+                log.debug("log-file found at path '${logFile.t.toPath()}'")
 
-        return if (isLogFileValid(logFile)) {
-            log.debug("log-file found")
-            true
+                if (isLogFileValid(logFile.t)) {
+                    log.debug("log-file found at path ''")
+                    result = true
+
+                } else {
+                    log.debug("log-file wasn't found")
+                }
+            }
+            is None -> log.debug("log-file wasn't found")
+        }
+
+        return result
+    }
+
+    private fun findLogFileCompanion(filePath: Path): Option<File> {
+        val logFilePath1 = Paths.get(
+            filePath.parent.toString(), "${filePath.toFile().nameWithoutExtension}.log"
+        ).toFile()
+
+        return if (logFilePath1.exists()) {
+            Some(logFilePath1)
 
         } else {
-            log.debug("log-file wasn't found")
-            false
+            val logFilePath2 = Paths.get("$filePath.log").toFile()
+
+            if (logFilePath2.exists()) {
+                Some(logFilePath2)
+
+            } else {
+                None
+            }
         }
     }
 

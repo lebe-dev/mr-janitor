@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createLogCompanionFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createMd5CompanionFile
@@ -156,6 +157,32 @@ internal class CheckIfFileItemValidTest {
         val fileItem = getFileItem(invalidArchiveFile)
 
         assertFalse(useCase.isValid(fileItem, validationConfig.copy(zipTest = true)))
+    }
+
+    @Test
+    fun `Log file check should return true if log file was found in one of two ways`() {
+        // APPROACH 1: source-file.zip.log
+
+        val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
+        val validationConfig = FileItemValidationConfig(md5FileCheck = false, zipTest = false, logFileExists = true)
+
+        val fileItem = FileItem(
+            path = archiveFile.toPath(),
+            name = archiveFile.name,
+            size = archiveFile.length(),
+            hash = "somehash",
+            valid = true
+        )
+
+        assertTrue(useCase.isValid(fileItem, validationConfig))
+
+        // APPROACH 2: source-file.log
+        logFile.delete()
+
+        Paths.get(archiveFile.parent, "${archiveFile.nameWithoutExtension}.log").toFile()
+             .apply { writeText(getRandomFileData()) }
+
+        assertTrue(useCase.isValid(fileItem, validationConfig))
     }
 
     @Test
