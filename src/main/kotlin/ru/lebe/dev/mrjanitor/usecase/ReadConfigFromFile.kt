@@ -14,6 +14,7 @@ import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.Defaults.FILENAME_FILTER_PATTERN
+import ru.lebe.dev.mrjanitor.util.Defaults.PROFILE_NAME
 import ru.lebe.dev.mrjanitor.util.getInt
 import ru.lebe.dev.mrjanitor.util.getString
 import java.io.File
@@ -44,7 +45,7 @@ class ReadConfigFromFile {
     }
 
     private fun getAppConfig(config: Config) =
-        when(val defaultProfile = loadProfile(config, Defaults.PROFILE_NAME, getInternalDefaultProfile())) {
+        when(val defaultProfile = loadProfile(config, PROFILE_NAME, getInternalDefaultProfile())) {
             is Either.Right -> {
 
                 when(val profiles = loadProfiles(config, defaultProfile.b)) {
@@ -70,7 +71,7 @@ class ReadConfigFromFile {
         }
 
     private fun getInternalDefaultProfile() = Profile(
-        name = "defaults",
+        name = PROFILE_NAME,
         path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
         keepCopies = Defaults.DEFAULT_KEEP_COPIES,
         fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
@@ -117,7 +118,7 @@ class ReadConfigFromFile {
             }
 
         } else {
-            log.error("'profiles' property hasn't found")
+            log.error("'profiles' property wasn't found")
             Either.left(OperationResult.ERROR)
         }
 
@@ -166,7 +167,7 @@ class ReadConfigFromFile {
         }
 
     private fun getFileItemValidationConfig(config: Config, sectionPath: String,
-                                            defaultValidationConfig: FileItemValidationConfig): FileItemValidationConfig {
+                                        defaultValidationConfig: FileItemValidationConfig): FileItemValidationConfig {
 
         return if (config.hasPath(sectionPath)) {
 
