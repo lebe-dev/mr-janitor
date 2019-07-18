@@ -13,6 +13,7 @@ import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
@@ -146,7 +147,9 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize += files2.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+        val pathIndex = createFileIndex.create(
+            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(pathIndex.isRight())
 
@@ -193,7 +196,9 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize2 = files.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+        val pathIndex = createFileIndex.create(
+            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(pathIndex.isRight())
 
@@ -243,7 +248,9 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize += files2.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(indexPath, StorageUnit.DIRECTORY)
+        val pathIndex = createFileIndex.create(
+            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(pathIndex.isRight())
 

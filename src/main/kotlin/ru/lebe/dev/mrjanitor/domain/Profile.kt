@@ -9,6 +9,8 @@ data class Profile(
 
     val storageUnit: StorageUnit,
 
+    val fileNameFilter: Regex,
+
     val keepCopies: Int,
 
     val fileItemValidationConfig: FileItemValidationConfig,

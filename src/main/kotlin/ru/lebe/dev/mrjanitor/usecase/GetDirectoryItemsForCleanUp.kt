@@ -20,7 +20,9 @@ class GetDirectoryItemsForCleanUp(
         log.info("get directory items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
-        return when(val fileIndex = createFileIndex.create(Paths.get(profile.path), profile.storageUnit)) {
+        return when(val fileIndex = createFileIndex.create(
+                Paths.get(profile.path), profile.storageUnit, profile.fileNameFilter)
+            ) {
             is Either.Right -> {
                 val validatedDirectoryItems = fileIndex.b.directoryItems.map { directoryItem ->
 

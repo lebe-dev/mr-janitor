@@ -13,14 +13,14 @@ import java.nio.file.Path
 class CreateFileIndex {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun create(path: Path, storageUnit: StorageUnit): Either<OperationResult, PathFileIndex> {
+    fun create(path: Path, storageUnit: StorageUnit, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> {
         log.info("create file index for path '$path'")
         log.info("- storage-unit: $storageUnit")
 
         return if (path.toFile().exists()) {
             when(storageUnit) {
-                StorageUnit.DIRECTORY -> createIndexForDirectories(path)
-                StorageUnit.FILE -> createIndexForFiles(path)
+                StorageUnit.DIRECTORY -> createIndexForDirectories(path, fileNameFilter)
+                StorageUnit.FILE -> createIndexForFiles(path, fileNameFilter)
             }
         } else {
             log.error("path doesn't exist")
@@ -28,8 +28,8 @@ class CreateFileIndex {
         }
     }
 
-    private fun createIndexForDirectories(path: Path): Either<OperationResult, PathFileIndex> =
-        when(val directoryItems = getDirectoryItemsFromPath(path)) {
+    private fun createIndexForDirectories(path: Path, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
+        when(val directoryItems = getDirectoryItemsFromPath(path, fileNameFilter)) {
             is Success -> {
                 log.info("index has been created")
                 log.debug(directoryItems.value.toString())
@@ -51,8 +51,8 @@ class CreateFileIndex {
             }
         }
 
-    private fun createIndexForFiles(path: Path): Either<OperationResult, PathFileIndex> =
-        when(val fileItems = getFileItemsFromPath(path)) {
+    private fun createIndexForFiles(path: Path, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
+        when(val fileItems = getFileItemsFromPath(path, fileNameFilter)) {
             is Try.Success -> {
                 Either.right(
                     PathFileIndex(
@@ -72,12 +72,12 @@ class CreateFileIndex {
             }
         }
 
-    private fun getDirectoryItemsFromPath(path: Path) = Try<List<DirectoryItem>> {
+    private fun getDirectoryItemsFromPath(path: Path, fileNameFilter: Regex) = Try<List<DirectoryItem>> {
         val results = arrayListOf<DirectoryItem>()
 
         path.toFile().listFiles()?.filter { it.isDirectory }?.forEach { directory ->
 
-            when(val fileItems = getFileItemsFromPath(directory.absoluteFile.toPath())) {
+            when(val fileItems = getFileItemsFromPath(directory.absoluteFile.toPath(), fileNameFilter)) {
                 is Success -> {
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
@@ -99,10 +99,10 @@ class CreateFileIndex {
         results
     }
 
-    private fun getFileItemsFromPath(path: Path) = Try<List<FileItem>> {
+    private fun getFileItemsFromPath(path: Path, fileNameFilter: Regex) = Try<List<FileItem>> {
         val results = arrayListOf<FileItem>()
 
-        path.toFile().listFiles()?.filter { it.isFile }
+        path.toFile().listFiles()?.filter { it.isFile && fileNameFilter.matches(it.name) }
                                  ?.filterNot { it.extension.toLowerCase() in listOf("md5", "log") }
                                  ?.forEach { file ->
             results += FileItem(

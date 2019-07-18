@@ -9,11 +9,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
 import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 
 internal class CreateFileIndexTest {
 
@@ -43,7 +47,7 @@ internal class CreateFileIndexTest {
         val secondFile = Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(indexPath, StorageUnit.FILE)
+        val results = useCase.create(indexPath, StorageUnit.FILE, Regex(Defaults.FILENAME_FILTER_PATTERN))
 
         assertTrue(results.isRight())
 
@@ -86,7 +90,7 @@ internal class CreateFileIndexTest {
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(indexPath, StorageUnit.DIRECTORY)
+        val results = useCase.create(indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN))
 
         assertTrue(results.isRight())
 
@@ -130,7 +134,9 @@ internal class CreateFileIndexTest {
 
     @Test
     fun `Return error if path doesn't exist`() {
-        val result = useCase.create(File("does-not-exist").toPath(), StorageUnit.DIRECTORY)
+        val result = useCase.create(
+            File("does-not-exist").toPath(), StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(result.isLeft())
 
@@ -144,7 +150,7 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is File)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(directory, StorageUnit.FILE)
+        val results = useCase.create(directory, StorageUnit.FILE, Regex(Defaults.FILENAME_FILTER_PATTERN))
         assertTrue(results.isRight())
 
         when(results) {
@@ -162,7 +168,7 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is Directory)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(directory, StorageUnit.DIRECTORY)
+        val results = useCase.create(directory, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN))
         assertTrue(results.isRight())
 
         when(results) {
@@ -173,6 +179,73 @@ internal class CreateFileIndexTest {
                 assertTrue(results.b.fileItems.isEmpty())
             }
             is Either.Left -> throw Exception("asser exception")
+        }
+    }
+
+    @Test
+    fun `Files Index - Don't include files excluded by name filter`() {
+        val fileNameFilter = ".*\\.zip$"
+
+        val (firstFile, _, _) = getSampleArchiveFileWithCompanions(
+            indexPath, UUID.randomUUID().toString()
+        )
+
+        Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomFileData()) }
+        Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomFileData()) }
+
+        val results = useCase.create(indexPath, StorageUnit.FILE, Regex(fileNameFilter))
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                assertEquals(indexPath, results.b.path)
+                assertEquals(StorageUnit.FILE, results.b.storageUnit)
+                assertEquals(1, results.b.fileItems.size)
+                assertTrue(results.b.directoryItems.isEmpty())
+
+                val firstItem = results.b.fileItems.first()
+                assertEquals(Paths.get(indexPath.toString(), firstFile.name).toString(), firstItem.path.toString())
+            }
+            is Either.Left -> throw Exception("assertion error")
+        }
+    }
+
+    @Test
+    fun `Directory Index - Don't include files excluded by name filter`() {
+        val fileNameFilter = ".*\\.zip$"
+
+        createDirectory(indexPath, "2019-07-14") { directory ->
+            val (_, _, _) = getSampleArchiveFileWithCompanions(
+                directory, UUID.randomUUID().toString()
+            )
+
+            Paths.get(directory.toString(), "cowboy.jpg").toFile().apply { writeText(getRandomFileData()) }
+            Paths.get(directory.toString(), "outlaw.bmp").toFile().apply { writeText(getRandomFileData()) }
+        }
+
+        createDirectory(indexPath, "2019-07-15") { directory ->
+            getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
+            getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
+
+            Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomFileData()) }
+        }
+
+        val results = useCase.create(indexPath, StorageUnit.DIRECTORY, Regex(fileNameFilter))
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                assertEquals(2, results.b.directoryItems.size)
+
+                val firstDirectoryItem = results.b.directoryItems.first()
+                assertEquals(1, firstDirectoryItem.fileItems.size)
+
+                val secondDirectoryItem = results.b.directoryItems.last()
+                assertEquals(2, secondDirectoryItem.fileItems.size)
+            }
+            is Either.Left -> throw Exception("assertion error")
         }
     }
 }

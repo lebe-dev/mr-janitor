@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.*
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.Defaults.FILENAME_FILTER_PATTERN
 import ru.lebe.dev.mrjanitor.util.getInt
 import ru.lebe.dev.mrjanitor.util.getString
 import java.io.File
@@ -28,6 +29,7 @@ class ReadConfigFromFile {
                     name = "defaults",
                     path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
                     keepCopies = Defaults.DEFAULT_KEEP_COPIES,
+                    fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
                     fileItemValidationConfig = FileItemValidationConfig(
                         md5FileCheck = true, zipTest = true, logFileExists = true
                     ),
@@ -135,6 +137,9 @@ class ReadConfigFromFile {
                     name = profileName,
                     path = config.getString("$profileName.path", ""),
                     storageUnit = getStorageUnit(config, profileName, defaultProfile.storageUnit),
+                    fileNameFilter = Regex(
+                        config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
+                    ),
                     keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
                     fileItemValidationConfig = getFileItemValidationConfig(
                         config, "$profileName.item-validation", defaultProfile.fileItemValidationConfig

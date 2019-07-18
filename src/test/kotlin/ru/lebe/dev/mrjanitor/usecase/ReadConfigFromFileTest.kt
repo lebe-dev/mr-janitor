@@ -30,6 +30,7 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.name shouldBe "mysite"
                 firstProfile.path shouldBe "."
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+                firstProfile.fileNameFilter.pattern shouldBe ".*\\.ZIP$"
                 firstProfile.keepCopies shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
@@ -45,6 +46,7 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.name shouldBe "nginx-logs"
                 lastProfile.path shouldBe "."
                 lastProfile.storageUnit shouldBe StorageUnit.FILE
+                lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
                 lastProfile.keepCopies shouldBe 14
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
@@ -111,6 +113,7 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
                 firstProfile.keepCopies shouldBe 7
                 firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+                firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
 
                 val fileItemValidationConfig = firstProfile.fileItemValidationConfig
                 fileItemValidationConfig.md5FileCheck shouldBe true

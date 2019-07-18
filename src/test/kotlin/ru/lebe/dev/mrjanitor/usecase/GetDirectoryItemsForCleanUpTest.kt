@@ -11,6 +11,7 @@ import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
@@ -57,7 +58,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             SimpleDateFormat("yyyy-MM-dd").format(it)
         }
 
-        val invalidDirectory1 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-09"))
         ) { directoryPath ->
 
@@ -66,35 +67,35 @@ internal class GetDirectoryItemsForCleanUpTest {
             createValidArchiveFiles(directoryPath, 2) // GOOD
         }
 
-        val validDirectory1 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-10"))
         ) {
             createValidArchiveFiles(it, 5) // GOOD
         }
 
-        val validDirectory2 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-11"))
         ) {
             createValidArchiveFiles(it, 6) // GOOD
         }
 
-        val invalidDirectory2 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-12"))
         ) {
             createValidArchiveFiles(it, 5)
         }
 
-        val validDirectory3 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-13"))
         ) {
             createValidArchiveFiles(it, 6) // GOOD
         }
 
-        val emptyDirectory = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-14"))
         ) {}
 
-        val validDirectory4 = createDirectory(
+        createDirectory(
             indexPath, getDateFolderName(getDateFromString("2019-07-15"))
         ) {
             createValidArchiveFiles(it, 7) // GOOD
@@ -104,6 +105,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             name = "test",
             path = indexPath.toString(),
             storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
             keepCopies = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,

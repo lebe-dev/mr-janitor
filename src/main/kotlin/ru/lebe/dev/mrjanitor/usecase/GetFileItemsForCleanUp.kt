@@ -17,7 +17,9 @@ class GetFileItemsForCleanUp(
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
-        return when(val fileIndex = createFileIndex.create(Paths.get(profile.path), profile.storageUnit)) {
+        return when(val fileIndex = createFileIndex.create(
+            Paths.get(profile.path), profile.storageUnit, profile.fileNameFilter
+        )) {
             is Either.Right -> {
                 val validatedFileItems = fileIndex.b.fileItems.map {
                     it.copy(valid = checkIfFileItemValid.isValid(it, profile.fileItemValidationConfig))

@@ -4,6 +4,9 @@ config {
 
 	// Default settings for each profile
 	defaults {
+	    // Get only files with names matches regular expression
+	    file-name-filter = ".*\.zip$"
+
 	    keep-copies = 7
 	}
 

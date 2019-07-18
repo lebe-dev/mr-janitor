@@ -11,6 +11,7 @@ import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentLogFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
@@ -75,6 +76,7 @@ internal class GetFileItemsForCleanUpTest {
             name = "test",
             path = indexPath.toString(),
             storageUnit = StorageUnit.FILE,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
             keepCopies = 5,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
