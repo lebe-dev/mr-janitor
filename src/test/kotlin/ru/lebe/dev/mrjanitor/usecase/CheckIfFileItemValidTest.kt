@@ -1,5 +1,7 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.None
+import arrow.core.Some
 import org.apache.commons.codec.digest.DigestUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -27,10 +29,12 @@ internal class CheckIfFileItemValidTest {
     private val sampleBaseFileName = "sample-archive"
 
     private val validationConfig = FileItemValidationConfig(
+        fileSizeAtLeastAsPrevious = false,
         md5FileCheck = false, zipTest = false, logFileExists = false
     )
 
     private val checkAllValidationConfig = FileItemValidationConfig(
+        fileSizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true,
         logFileExists = true
     )
@@ -57,7 +61,7 @@ internal class CheckIfFileItemValidTest {
     @Test
     fun `Return false if file-item doesn't exist`() {
         val file = File("file-does-not-exist")
-        assertFalse(useCase.isValid(getFileItem(file), checkAllValidationConfig))
+        assertFalse(useCase.isValid(getFileItem(file), None, checkAllValidationConfig))
     }
 
     @Test
@@ -66,7 +70,7 @@ internal class CheckIfFileItemValidTest {
 
         val fileItem = getFileItem(archiveFile, hashFile.readText())
 
-        assertTrue(useCase.isValid(fileItem, md5ValidationConfig))
+        assertTrue(useCase.isValid(fileItem, None, md5ValidationConfig))
     }
 
     @Test
@@ -76,14 +80,14 @@ internal class CheckIfFileItemValidTest {
 
         val fileItem = getFileItem(archiveFile)
 
-        assertFalse(useCase.isValid(fileItem, md5ValidationConfig))
+        assertFalse(useCase.isValid(fileItem, None, md5ValidationConfig))
     }
 
     @Test
     fun `Md5-hash check - return false if hash from md5-file doesn't equal with file-item hash`() {
         val (archiveFile, _, _) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
         val fileItem = getFileItem(archiveFile)
-        assertFalse(useCase.isValid(fileItem, md5ValidationConfig))
+        assertFalse(useCase.isValid(fileItem, None, md5ValidationConfig))
     }
 
     @Test
@@ -94,7 +98,7 @@ internal class CheckIfFileItemValidTest {
 
         val fileItem = getFileItem(archiveFile)
 
-        assertFalse(useCase.isValid(fileItem, logFileValidationConfig))
+        assertFalse(useCase.isValid(fileItem, None, logFileValidationConfig))
     }
 
     @Test
@@ -106,7 +110,7 @@ internal class CheckIfFileItemValidTest {
 
         val fileItem = getFileItem(archiveFile)
 
-        assertFalse(useCase.isValid(fileItem, logFileValidationConfig))
+        assertFalse(useCase.isValid(fileItem, None, logFileValidationConfig))
     }
 
     @Test
@@ -116,14 +120,14 @@ internal class CheckIfFileItemValidTest {
         hashFile.delete()
         val fileItem = getFileItem(archiveFile)
 
-        assertFalse(useCase.isValid(fileItem, checkAllValidationConfig))
+        assertFalse(useCase.isValid(fileItem, None, checkAllValidationConfig))
 
         // Without log file
         val (archiveFile2, hashFile2, logFile2) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
         logFile2.delete()
         val fileItem2 = getFileItem(archiveFile2, hashFile2.readText())
 
-        assertFalse(useCase.isValid(fileItem2, checkAllValidationConfig))
+        assertFalse(useCase.isValid(fileItem2, None, checkAllValidationConfig))
 
         // Log file has zero size
         val (archiveFile3, hashFile3, logFile3) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
@@ -131,7 +135,7 @@ internal class CheckIfFileItemValidTest {
         logFile3.createNewFile()
         val fileItem3 = getFileItem(archiveFile3, hashFile3.readText())
 
-        assertFalse(useCase.isValid(fileItem3, checkAllValidationConfig))
+        assertFalse(useCase.isValid(fileItem3, None, checkAllValidationConfig))
 
         // Invalid archive file
         val invalidArchiveFile = File(javaClass.getResource("/invalid-archive.zip").toURI())
@@ -139,7 +143,7 @@ internal class CheckIfFileItemValidTest {
         createLogCompanionFile(indexPath, invalidArchiveFile)
 
         val fileItem4 = getFileItem(invalidArchiveFile, hashFile4.readText())
-        assertFalse(useCase.isValid(fileItem4, checkAllValidationConfig))
+        assertFalse(useCase.isValid(fileItem4, None, checkAllValidationConfig))
     }
 
     @Test
@@ -147,7 +151,7 @@ internal class CheckIfFileItemValidTest {
         val (archiveFile, _, _) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
         val fileItem = getFileItem(archiveFile)
 
-        assertTrue(useCase.isValid(fileItem, validationConfig.copy(zipTest = true)))
+        assertTrue(useCase.isValid(fileItem, None, validationConfig.copy(zipTest = true)))
     }
 
     @Test
@@ -156,7 +160,7 @@ internal class CheckIfFileItemValidTest {
 
         val fileItem = getFileItem(invalidArchiveFile)
 
-        assertFalse(useCase.isValid(fileItem, validationConfig.copy(zipTest = true)))
+        assertFalse(useCase.isValid(fileItem, None, validationConfig.copy(zipTest = true)))
     }
 
     @Test
@@ -164,7 +168,10 @@ internal class CheckIfFileItemValidTest {
         // APPROACH 1: source-file.zip.log
 
         val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
-        val validationConfig = FileItemValidationConfig(md5FileCheck = false, zipTest = false, logFileExists = true)
+        val validationConfig = FileItemValidationConfig(
+            fileSizeAtLeastAsPrevious = true,
+            md5FileCheck = false, zipTest = false, logFileExists = true
+        )
 
         val fileItem = FileItem(
             path = archiveFile.toPath(),
@@ -174,7 +181,7 @@ internal class CheckIfFileItemValidTest {
             valid = true
         )
 
-        assertTrue(useCase.isValid(fileItem, validationConfig))
+        assertTrue(useCase.isValid(fileItem, None, validationConfig))
 
         // APPROACH 2: source-file.log
         logFile.delete()
@@ -182,11 +189,43 @@ internal class CheckIfFileItemValidTest {
         Paths.get(archiveFile.parent, "${archiveFile.nameWithoutExtension}.log").toFile()
              .apply { writeText(getRandomFileData()) }
 
-        assertTrue(useCase.isValid(fileItem, validationConfig))
+        assertTrue(useCase.isValid(fileItem, None, validationConfig))
+    }
+
+    @Test
+    fun `Return false if file-item has smaller size than previous one`() {
+        val validationConfig = FileItemValidationConfig(
+            fileSizeAtLeastAsPrevious = true, md5FileCheck = false,
+            zipTest = false, logFileExists = false
+        )
+
+        val firstFile = Paths.get(indexPath.toString(), "file1.txt").toFile().apply { writeText("some-data") }
+        val secondFile = Paths.get(indexPath.toString(), "file2.txt").toFile().apply { writeText("some-d") }
+
+        val previousFileItem = FileItem(
+            path = firstFile.toPath(),
+            name = firstFile.name,
+            size = firstFile.length(),
+            hash = "somehash",
+            valid = true
+        )
+
+        val currentFileItem = FileItem(
+            path = secondFile.toPath(),
+            name = secondFile.name,
+            size = secondFile.length(),
+            hash = "somehash2",
+            valid = true
+        )
+
+        assertFalse(useCase.isValid(currentFileItem, Some(previousFileItem), validationConfig))
     }
 
     @Test
     fun `Return true if all checks are passed`() {
+        val (previousArchiveFile, previousHashFile, _) = getSampleArchiveFileWithCompanions(
+            indexPath, "${sampleBaseFileName}2"
+        )
         val (archiveFile, _, _) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
 
         val md5Hash = archiveFile.inputStream().use { DigestUtils.md5Hex(it) }
@@ -195,8 +234,9 @@ internal class CheckIfFileItemValidTest {
         Paths.get("${archiveFile.absoluteFile.toPath()}.log")
              .apply { toFile().writeText(getRandomFileData()) }
 
+        val previousFileItem = getFileItem(previousArchiveFile, previousHashFile.readText())
         val fileItem = getFileItem(archiveFile, md5Hash)
 
-        assertTrue(useCase.isValid(fileItem, checkAllValidationConfig))
+        assertTrue(useCase.isValid(fileItem, Some(previousFileItem), checkAllValidationConfig))
     }
 }

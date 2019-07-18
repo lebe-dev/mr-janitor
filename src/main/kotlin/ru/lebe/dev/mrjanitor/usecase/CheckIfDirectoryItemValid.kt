@@ -1,9 +1,12 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.None
 import arrow.core.Option
+import arrow.core.Some
 import arrow.core.getOrElse
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
+import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import java.nio.file.Path
@@ -25,11 +28,11 @@ class CheckIfDirectoryItemValid(
 
         if (isBasicValidationSuccess(directoryItem)) {
 
+            var nextCheckLock = false
+
             if (directoryValidationConfig.qtyAtLeastAsInPreviousItem && previousDirectoryItem.isDefined()) {
 
-                val previousItem = previousDirectoryItem.getOrElse {
-                    DirectoryItem(path = Paths.get("."), name = "", size = 0, fileItems = listOf(), valid = false)
-                }
+                val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
                 log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
                 log.debug("  - files in previous directory: ${previousItem.fileItems.size}")
@@ -37,26 +40,59 @@ class CheckIfDirectoryItemValid(
                 if (directoryItem.fileItems.size >= previousItem.fileItems.size) {
                     log.debug("- directory contains expected file-items count: true")
 
-                    result = directoryItem.fileItems.all {
-                        checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
-                    }
-
+                    result = true
                     log.debug("- all file items are valid: $result")
 
                 } else {
                     log.debug("- directory contains expected file-items count: false")
                 }
 
-            } else {
-                result = directoryItem.fileItems.all {
-                    checkIfFileItemValid.isValid(fileItem = it, validationConfig = fileValidationConfig)
+                if (!result) { nextCheckLock = true }
+
+            }
+
+            if (!nextCheckLock && directoryValidationConfig.fileSizeAtLeastAsPrevious) {
+                val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
+
+                if (directoryItem.size >= previousItem.size) {
+                    result = true
+                }
+
+                if (!result) { nextCheckLock = true }
+            }
+
+            if (!nextCheckLock) {
+
+                result = directoryItem.fileItems.all { fileItem ->
+
+                    val previousFileItem: Option<FileItem> = getPreviousFileItem(
+                        directoryItem.fileItems, fileItem.path.toString()
+                    )
+
+                    checkIfFileItemValid.isValid(
+                        fileItem = fileItem, previousFileItem = previousFileItem,
+                        validationConfig = fileValidationConfig
+                    )
                 }
 
                 log.debug("- all file items are valid: $result")
+
             }
+
         }
 
         return result
+    }
+
+    private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
+        val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
+
+        return if (itemsBeforeCurrent.isNotEmpty()) {
+            Some(itemsBeforeCurrent.last())
+
+        } else {
+            None
+        }
     }
 
     private fun isBasicValidationSuccess(directoryItem: DirectoryItem): Boolean {
@@ -85,4 +121,7 @@ class CheckIfDirectoryItemValid(
     }
 
     private fun isPathValid(path: Path) = path.toFile().exists() && path.toFile().isDirectory
+
+    private fun getInvalidDirectoryItem() =
+        DirectoryItem(path = Paths.get("."), name = "", size = 999999999999999, fileItems = listOf(), valid = false)
 }

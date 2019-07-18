@@ -1,15 +1,15 @@
 package ru.lebe.dev.mrjanitor.usecase
 
 import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import ru.lebe.dev.mrjanitor.domain.CleanAction
-import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.Profile
-import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.domain.*
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
@@ -30,10 +30,12 @@ internal class GetFileItemsForCleanUpTest {
     private lateinit var useCase: GetFileItemsForCleanUp
 
     private val fileItemValidationConfig = FileItemValidationConfig(
+        fileSizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true, logFileExists = true
     )
 
     private val directoryItemValidationConfig = DirectoryItemValidationConfig(
+        fileSizeAtLeastAsPrevious = true,
         qtyAtLeastAsInPreviousItem = true
     )
 
@@ -96,10 +98,36 @@ internal class GetFileItemsForCleanUpTest {
                 val invalidItems = results.b.filter { !it.valid }
                 assertEquals(13, invalidItems.size)
 
-                assertTrue(validButOldItems.all { checkIfFileItemValid.isValid(it, profile.fileItemValidationConfig) })
-                assertTrue(invalidItems.all { !checkIfFileItemValid.isValid(it, profile.fileItemValidationConfig) })
+                assertTrue(
+                    validButOldItems.all {
+                        checkIfFileItemValid.isValid(
+                            it, getPreviousFileItem(validButOldItems, it.path.toString()),
+                            profile.fileItemValidationConfig
+                        )
+                    }
+                )
+                assertTrue(
+                    invalidItems.all {
+                        !checkIfFileItemValid.isValid(
+                            it,
+                            getPreviousFileItem(validButOldItems, it.path.toString()),
+                            profile.fileItemValidationConfig
+                        )
+                    }
+                )
             }
             is Either.Left -> throw Exception("assert exception")
+        }
+    }
+
+    private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
+        val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
+
+        return if (itemsBeforeCurrent.isNotEmpty()) {
+            Some(itemsBeforeCurrent.last())
+
+        } else {
+            None
         }
     }
 

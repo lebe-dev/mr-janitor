@@ -15,7 +15,9 @@ import java.util.zip.ZipFile
 class CheckIfFileItemValid {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun isValid(fileItem: FileItem, validationConfig: FileItemValidationConfig): Boolean {
+    fun isValid(fileItem: FileItem, previousFileItem: Option<FileItem>,
+                validationConfig: FileItemValidationConfig): Boolean {
+
         log.info("---")
         log.info("check if file-item valid: '${fileItem.path}'")
         log.debug(fileItem.toString())
@@ -32,6 +34,14 @@ class CheckIfFileItemValid {
                 result = isMd5CheckSuccess(fileItem)
 
                 log.debug("- md5-hash check success: $result")
+
+                if (!result) { nextCheckLock = true }
+            }
+
+            if (!nextCheckLock && validationConfig.fileSizeAtLeastAsPrevious) {
+                result = isPreviousFileItemSizeCheckSuccess(fileItem, previousFileItem)
+
+                log.debug("- previous file-item size check success: $result")
 
                 if (!result) { nextCheckLock = true }
             }
@@ -58,6 +68,18 @@ class CheckIfFileItemValid {
 
         return result
     }
+
+    private fun isPreviousFileItemSizeCheckSuccess(currentFileItem: FileItem,
+                                                   previousFileItem: Option<FileItem>) =
+        when(previousFileItem) {
+            is Some -> {
+                currentFileItem.size >= previousFileItem.t.size
+            }
+            is None -> {
+                log.debug("there is no previous file-item")
+                true
+            }
+        }
 
     private fun isMd5CheckSuccess(fileItem: FileItem): Boolean {
         var result = false

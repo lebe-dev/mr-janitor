@@ -1,11 +1,11 @@
 config {
 
-	// Profiles
-
 	// Default settings for each profile
 	defaults {
 	    // Get only files with names matches regular expression
 	    file-name-filter = ".*\.zip$"
+
+	    file-size-at-least-as-previous = true
 
 	    keep-copies = 7
 	}
@@ -30,7 +30,10 @@ config {
             zip-test = true // check zip archive integrity
             log-file-exists = true // log files should be exists
 
-            // files overall quantity should be equal or greater than in previous directory
+            // Check if current item size equal or greater than previous item
+            file-size-at-least-as-previous = true
+
+            // Files overall quantity should be equal or greater than in previous directory
             qty-at-least-as-previous-valid = true
         }
 

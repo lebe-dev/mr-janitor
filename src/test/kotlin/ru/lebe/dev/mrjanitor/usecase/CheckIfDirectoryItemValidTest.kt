@@ -34,10 +34,12 @@ internal class CheckIfDirectoryItemValidTest {
     private lateinit var useCase: CheckIfDirectoryItemValid
 
     private val directoryValidationConfig = DirectoryItemValidationConfig(
+        fileSizeAtLeastAsPrevious = true,
         qtyAtLeastAsInPreviousItem = false
     )
 
     private val fileItemValidationConfig = FileItemValidationConfig(
+        fileSizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true, logFileExists = true
     )
 

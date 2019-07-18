@@ -35,11 +35,18 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
                 val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
+                fileItemValidationConfig1.fileSizeAtLeastAsPrevious shouldBe true
                 fileItemValidationConfig1.md5FileCheck shouldBe false
                 fileItemValidationConfig1.zipTest shouldBe true
                 fileItemValidationConfig1.logFileExists shouldBe true
 
                 firstProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+
+                val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
+                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe true
+
+                //
 
                 val lastProfile = result.b.profiles.last()
 
@@ -51,11 +58,14 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
                 val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
+                fileItemValidationConfig2.fileSizeAtLeastAsPrevious shouldBe false
                 fileItemValidationConfig2.md5FileCheck shouldBe true
                 fileItemValidationConfig2.zipTest shouldBe false
                 fileItemValidationConfig2.logFileExists shouldBe false
 
-                lastProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe false
+                val directoryItemValidationConfig2 = lastProfile.directoryItemValidationConfig
+                directoryItemValidationConfig2.qtyAtLeastAsInPreviousItem shouldBe false
+                directoryItemValidationConfig2.fileSizeAtLeastAsPrevious shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -82,8 +92,9 @@ class ReadConfigFromFileTest: StringSpec({
                 result.b.defaultProfile.keepCopies shouldBe 7
                 result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
 
-                result.b.defaultProfile.directoryItemValidationConfig
-                                       .qtyAtLeastAsInPreviousItem shouldBe true
+                val directoryItemValidationConfig = result.b.defaultProfile.directoryItemValidationConfig
+                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -116,11 +127,14 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
 
                 val fileItemValidationConfig = firstProfile.fileItemValidationConfig
+                fileItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe false
                 fileItemValidationConfig.md5FileCheck shouldBe true
                 fileItemValidationConfig.zipTest shouldBe false
                 fileItemValidationConfig.logFileExists shouldBe false
 
-                firstProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+                val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
+                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }

@@ -31,10 +31,11 @@ class ReadConfigFromFile {
                     keepCopies = Defaults.DEFAULT_KEEP_COPIES,
                     fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
                     fileItemValidationConfig = FileItemValidationConfig(
+                        fileSizeAtLeastAsPrevious = true,
                         md5FileCheck = true, zipTest = true, logFileExists = true
                     ),
                     directoryItemValidationConfig = DirectoryItemValidationConfig(
-                        qtyAtLeastAsInPreviousItem = true
+                        fileSizeAtLeastAsPrevious = true, qtyAtLeastAsInPreviousItem = true
                     ),
                     cleanAction = CleanAction.JUST_NOTIFY
                 )
@@ -162,6 +163,10 @@ class ReadConfigFromFile {
         return if (config.hasPath(sectionPath)) {
 
             FileItemValidationConfig(
+                fileSizeAtLeastAsPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.file-size-at-least-as-previous",
+                    defaultValidationConfig.fileSizeAtLeastAsPrevious
+                ),
                 md5FileCheck = getBooleanPropertyValue(
                     config, "$sectionPath.md5-file-check", defaultValidationConfig.md5FileCheck
                 ),
@@ -184,6 +189,10 @@ class ReadConfigFromFile {
         return if (config.hasPath(sectionPath)) {
 
             DirectoryItemValidationConfig(
+                fileSizeAtLeastAsPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.file-size-at-least-as-previous",
+                    defaultValidationConfig.fileSizeAtLeastAsPrevious
+                ),
                 qtyAtLeastAsInPreviousItem = getBooleanPropertyValue(
                     config, "$sectionPath.qty-at-least-as-previous-valid",
                     defaultValidationConfig.qtyAtLeastAsInPreviousItem
