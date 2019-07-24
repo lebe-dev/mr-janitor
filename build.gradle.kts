@@ -57,6 +57,8 @@ detekt {
 
     input = project.files("src/main/kotlin")
 
+    config = files("detekt.yml")
+
     reports {
         html {
             enabled = true
