@@ -23,7 +23,7 @@ class CheckIfDirectoryItemValid(
 
         log.info("---")
         log.info("check if directory-item is valid, path '${directoryItem.path}'")
-        log.debug(directoryItem.toString())
+        log.trace(directoryItem.toString())
 
         var result = false
 
@@ -36,7 +36,7 @@ class CheckIfDirectoryItemValid(
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
                 log.debug("previous-item:")
-                log.debug(previousItem.toString())
+                log.trace(previousItem.toString())
 
                 log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
                 log.debug("  - files in previous directory ('${previousItem.name}'): ${previousItem.fileItems.size}")
