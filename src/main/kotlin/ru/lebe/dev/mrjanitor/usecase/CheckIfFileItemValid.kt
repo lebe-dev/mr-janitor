@@ -73,6 +73,8 @@ class CheckIfFileItemValid {
                                                    previousFileItem: Option<FileItem>) =
         when(previousFileItem) {
             is Some -> {
+                log.debug("  - previous item size: ${previousFileItem.t.size}")
+                log.debug("  - current item size: ${currentFileItem.size}")
                 currentFileItem.size >= previousFileItem.t.size
             }
             is None -> {

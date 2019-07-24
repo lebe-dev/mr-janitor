@@ -35,7 +35,7 @@ class CheckIfDirectoryItemValid(
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
                 log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
-                log.debug("  - files in previous directory: ${previousItem.fileItems.size}")
+                log.debug("  - files in previous directory ('${previousItem.name}'): ${previousItem.fileItems.size}")
 
                 if (directoryItem.fileItems.size >= previousItem.fileItems.size) {
                     log.debug("- directory contains expected file-items count: true")
