@@ -24,6 +24,10 @@ import java.nio.file.Paths
 class ReadConfigFromFile {
     private val log = LoggerFactory.getLogger(javaClass)
 
+    companion object {
+        private const val PROFILES_SECTION = "profiles"
+    }
+
     fun read(file: File): Either<OperationResult, AppConfig> {
         log.info("read configuration from file '${file.absolutePath}'")
 
@@ -88,13 +92,13 @@ class ReadConfigFromFile {
     )
 
     private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationResult, List<Profile>> =
-        if (config.hasPath("profiles")) {
+        if (config.hasPath(PROFILES_SECTION)) {
 
             val profiles = arrayListOf<Profile>()
 
             var profileLoadError = false
 
-            config.getStringList("profiles").forEach { profileName ->
+            config.getStringList(PROFILES_SECTION).forEach { profileName ->
                 when(val profile = loadProfile(config, profileName, defaultProfile)) {
                     is Either.Right -> {
 
@@ -120,7 +124,7 @@ class ReadConfigFromFile {
             }
 
         } else {
-            log.error("'profiles' property wasn't found")
+            log.error("'$PROFILES_SECTION' property wasn't found")
             Either.left(OperationResult.ERROR)
         }
 
@@ -230,16 +234,16 @@ class ReadConfigFromFile {
 
     private fun getStorageUnit(config: Config, profilePath: String, defaultValue: StorageUnit): StorageUnit =
         when(config.getString("$profilePath.unit", "")) {
-            "directory" -> StorageUnit.DIRECTORY
-            "file" -> StorageUnit.FILE
+            StorageUnit.DIRECTORY.toString().toLowerCase() -> StorageUnit.DIRECTORY
+            StorageUnit.FILE.toString().toLowerCase() -> StorageUnit.FILE
             else -> defaultValue
         }
 
     private fun getCleanAction(config: Config, profilePath: String, defaultValue: CleanAction): CleanAction =
         if (config.hasPath("$profilePath.action")) {
             when(config.getString("$profilePath.action")) {
-                "compress" -> CleanAction.COMPRESS
-                "remove" -> CleanAction.REMOVE
+                CleanAction.COMPRESS.toString().toLowerCase() -> CleanAction.COMPRESS
+                CleanAction.REMOVE.toString().toLowerCase() -> CleanAction.REMOVE
                 else -> defaultValue
             }
 
