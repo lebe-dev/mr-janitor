@@ -19,6 +19,14 @@ class CommandLineInteractor(
     fun executeDryRun(profiles: List<Profile>) {
         profiles.forEach { profile ->
 
+            presenter.showMessage("--------------------------")
+            presenter.showMessage("profile '${profile.name}'")
+            presenter.showMessage("- path: '${profile.path}'")
+            presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
+            presenter.showMessage("- keep copies: ${profile.keepCopies}")
+
+            presenter.showMessage("~ getting items for clean up..")
+
             when(profile.storageUnit) {
                 StorageUnit.DIRECTORY -> {
                     when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
@@ -47,10 +55,11 @@ class CommandLineInteractor(
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {
         if (directoryItems.isNotEmpty()) {
 
-            presenter.showMessage("directory items for clean up:")
+            presenter.showMessage("directory items for clean up (${directoryItems.size}):")
 
             directoryItems.forEach { directoryItem ->
                 presenter.showMessage("- '${directoryItem.name}'")
+                presenter.showMessage("  - files: ${directoryItem.fileItems.size}")
                 presenter.showMessage("  - valid: ${directoryItem.valid}")
                 presenter.showMessage(
                     "  - last-modified: " +
