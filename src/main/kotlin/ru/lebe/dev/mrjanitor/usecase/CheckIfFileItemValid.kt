@@ -38,7 +38,7 @@ class CheckIfFileItemValid {
                 if (!result) { nextCheckLock = true }
             }
 
-            if (!nextCheckLock && validationConfig.fileSizeAtLeastAsPrevious) {
+            if (!nextCheckLock && validationConfig.sizeAtLeastAsPrevious) {
                 result = isPreviousFileItemSizeCheckSuccess(fileItem, previousFileItem)
 
                 log.debug("- previous file-item size check success: $result")

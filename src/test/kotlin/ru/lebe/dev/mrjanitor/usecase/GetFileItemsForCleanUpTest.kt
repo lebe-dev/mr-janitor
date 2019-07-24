@@ -34,13 +34,13 @@ internal class GetFileItemsForCleanUpTest {
     private lateinit var useCase: GetFileItemsForCleanUp
 
     private val fileItemValidationConfig = FileItemValidationConfig(
-        fileSizeAtLeastAsPrevious = true,
+        sizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true, logFileExists = true
     )
 
     private val directoryItemValidationConfig = DirectoryItemValidationConfig(
-        fileSizeAtLeastAsPrevious = true,
-        qtyAtLeastAsInPreviousItem = true
+        sizeAtLeastAsPrevious = true,
+        filesQtyAtLeastAsInPrevious = true, fileSizeAtLeastAsInPrevious = true
     )
 
     @BeforeEach

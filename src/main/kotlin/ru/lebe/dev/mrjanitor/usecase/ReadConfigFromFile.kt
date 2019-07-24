@@ -26,6 +26,8 @@ class ReadConfigFromFile {
 
     companion object {
         private const val PROFILES_SECTION = "profiles"
+
+        private const val ITEM_VALIDATION_SECTION = "item-validation"
     }
 
     fun read(file: File): Either<OperationResult, AppConfig> {
@@ -82,11 +84,12 @@ class ReadConfigFromFile {
         fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
         directoryNameFilter = Regex(DIRECTORY_NAME_FILTER_PATTERN),
         fileItemValidationConfig = FileItemValidationConfig(
-            fileSizeAtLeastAsPrevious = true,
+            sizeAtLeastAsPrevious = true,
             md5FileCheck = true, zipTest = true, logFileExists = true
         ),
         directoryItemValidationConfig = DirectoryItemValidationConfig(
-            fileSizeAtLeastAsPrevious = true, qtyAtLeastAsInPreviousItem = true
+            sizeAtLeastAsPrevious = true, filesQtyAtLeastAsInPrevious = true,
+            fileSizeAtLeastAsInPrevious = true
         ),
         cleanAction = CleanAction.JUST_NOTIFY
     )
@@ -153,20 +156,22 @@ class ReadConfigFromFile {
                     name = profileName,
                     path = config.getString("$profileName.path", ""),
                     storageUnit = getStorageUnit(config, profileName, defaultProfile.storageUnit),
-                    fileNameFilter = Regex(
-                        config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
-                    ),
                     directoryNameFilter = Regex(
                         config.getString(
                         "$profileName.directory-name-filter", defaultProfile.directoryNameFilter.pattern
                         )
                     ),
+                    fileNameFilter = Regex(
+                        config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
+                    ),
                     keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
                     fileItemValidationConfig = getFileItemValidationConfig(
-                        config, "$profileName.item-validation", defaultProfile.fileItemValidationConfig
+                        config, "$profileName.$ITEM_VALIDATION_SECTION.file",
+                        defaultProfile.fileItemValidationConfig
                     ),
                     directoryItemValidationConfig = getDirectoryItemValidationConfig(
-                        config, "$profileName.item-validation", defaultProfile.directoryItemValidationConfig
+                        config, "$profileName.$ITEM_VALIDATION_SECTION.directory",
+                        defaultProfile.directoryItemValidationConfig
                     ),
                     cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
                 )
@@ -177,15 +182,40 @@ class ReadConfigFromFile {
             Either.left(OperationResult.ERROR)
         }
 
+    private fun getDirectoryItemValidationConfig(config: Config, sectionPath: String,
+                                                 defaultValidationConfig: DirectoryItemValidationConfig): DirectoryItemValidationConfig {
+
+        return if (config.hasPath(sectionPath)) {
+
+            DirectoryItemValidationConfig(
+                sizeAtLeastAsPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.size-at-least-as-previous",
+                    defaultValidationConfig.sizeAtLeastAsPrevious
+                ),
+                filesQtyAtLeastAsInPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.files-qty-at-least-as-in-previous",
+                    defaultValidationConfig.filesQtyAtLeastAsInPrevious
+                ),
+                fileSizeAtLeastAsInPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.file-size-at-least-as-in-previous",
+                    defaultValidationConfig.filesQtyAtLeastAsInPrevious
+                )
+            )
+
+        } else {
+            defaultValidationConfig
+        }
+    }
+
     private fun getFileItemValidationConfig(config: Config, sectionPath: String,
                                         defaultValidationConfig: FileItemValidationConfig): FileItemValidationConfig {
 
         return if (config.hasPath(sectionPath)) {
 
             FileItemValidationConfig(
-                fileSizeAtLeastAsPrevious = getBooleanPropertyValue(
-                    config, "$sectionPath.file-size-at-least-as-previous",
-                    defaultValidationConfig.fileSizeAtLeastAsPrevious
+                sizeAtLeastAsPrevious = getBooleanPropertyValue(
+                    config, "$sectionPath.size-at-least-as-previous",
+                    defaultValidationConfig.sizeAtLeastAsPrevious
                 ),
                 md5FileCheck = getBooleanPropertyValue(
                     config, "$sectionPath.md5-file-check", defaultValidationConfig.md5FileCheck
@@ -195,27 +225,6 @@ class ReadConfigFromFile {
                 ),
                 logFileExists = getBooleanPropertyValue(
                     config, "$sectionPath.log-file-exists", defaultValidationConfig.logFileExists
-                )
-            )
-
-        } else {
-            defaultValidationConfig
-        }
-    }
-
-    private fun getDirectoryItemValidationConfig(config: Config, sectionPath: String,
-                                defaultValidationConfig: DirectoryItemValidationConfig): DirectoryItemValidationConfig {
-
-        return if (config.hasPath(sectionPath)) {
-
-            DirectoryItemValidationConfig(
-                fileSizeAtLeastAsPrevious = getBooleanPropertyValue(
-                    config, "$sectionPath.file-size-at-least-as-previous",
-                    defaultValidationConfig.fileSizeAtLeastAsPrevious
-                ),
-                qtyAtLeastAsInPreviousItem = getBooleanPropertyValue(
-                    config, "$sectionPath.qty-at-least-as-previous-valid",
-                    defaultValidationConfig.qtyAtLeastAsInPreviousItem
                 )
             )
 

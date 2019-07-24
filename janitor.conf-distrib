@@ -2,6 +2,10 @@ config {
 
 	// Default settings for each profile
 	defaults {
+
+        // Storage unit: directory
+        unit = "directory"
+
 	    // Get only files with names matches regular expression
 	    file-name-filter = ".*\.zip$"
 
@@ -9,7 +13,36 @@ config {
 	    // Default: YYYY-MM-DD
 	    directory-name-filter = "\d{4}-\d{2}-\d{2}"
 
-	    file-size-at-least-as-previous = true
+        item-validation {
+
+            // validation for storage unit: directory
+            directory {
+                // Expect directory total size >= previous directory item
+                size-at-least-as-previous = true
+
+                // Expect files quantity >= previous directory item
+                files-qty-at-least-as-in-previous = true
+
+                // Expect file item size >= same file size in previous directory
+                file-size-at-least-as-in-previous = true
+            }
+
+            // validation for storage unit: file
+            file {
+                // Expect current item size >= previous file item
+                size-at-least-as-previous = true
+
+                // Expect .md5 companion file and check hash
+                md5-file-check = true
+
+                // Check zip archive integrity
+                zip-test = true
+
+                // Expect log companion file
+                // Examples: archive.log or archive.zip.log
+                log-file-exists = true
+            }
+        }
 
 	    keep-copies = 7
 	}
@@ -20,22 +53,21 @@ config {
         // Root path to site backup files
         path = "/backups/mysite"
 
-        // Backup storage unit is directory
+        // Storage unit: directory
         unit = "directory"
 
-        keep-copies = 7 // How much copies to store
+        // How much copies to keep
+        keep-copies = 7
 
-        // Validation approaches for storage items
+        // Override defaults
         item-validation {
-            md5-file-check = true // each file has .md5 file with hash
-            zip-test = true // check zip archive integrity
-            log-file-exists = true // log files should be exists
+            directory {
+                size-at-least-as-previous = false
 
-            // Check if current item size equal or greater than previous item
-            file-size-at-least-as-previous = true
+                files-qty-at-least-as-in-previous = true
 
-            // Files overall quantity should be equal or greater than in previous directory
-            qty-at-least-as-previous-valid = true
+                file-size-at-least-as-in-previous = false
+            }
         }
 
         // What to do with out-of-date items
@@ -45,14 +77,25 @@ config {
 	mysql-dumps {
         path = "/backups/mysql" // root path to files
 
-        unit = "file" // Storage unit is file
+        // Storage unit: file
+        unit = "file"
 
         file-name-filter = ".*.sql" // Filter files by name (Regular expression)
 
-        keep-copies = 7 // How much to store
+        // How much to store
+        keep-copies = 7
 
+        // Override defaults
         item-validation {
-            md5-file-check = true
+            file {
+                md5-file-check = true
+
+                zip-test = false
+
+                log-file-exists = false
+
+                size-at-least-as-previous = false
+            }
         }
 
         // What to do with out-of-date items

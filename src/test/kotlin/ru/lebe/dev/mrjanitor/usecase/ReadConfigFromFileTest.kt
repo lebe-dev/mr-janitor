@@ -36,16 +36,17 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
                 val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
-                fileItemValidationConfig1.fileSizeAtLeastAsPrevious shouldBe true
-                fileItemValidationConfig1.md5FileCheck shouldBe false
-                fileItemValidationConfig1.zipTest shouldBe true
-                fileItemValidationConfig1.logFileExists shouldBe true
+                fileItemValidationConfig1.sizeAtLeastAsPrevious shouldBe true
+                fileItemValidationConfig1.md5FileCheck shouldBe true
+                fileItemValidationConfig1.zipTest shouldBe false
+                fileItemValidationConfig1.logFileExists shouldBe false
 
-                firstProfile.directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
+                firstProfile.directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
 
                 val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
-                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe true
+                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
+                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe false
 
                 //
 
@@ -60,14 +61,15 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
                 val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
-                fileItemValidationConfig2.fileSizeAtLeastAsPrevious shouldBe false
+                fileItemValidationConfig2.sizeAtLeastAsPrevious shouldBe false
                 fileItemValidationConfig2.md5FileCheck shouldBe true
-                fileItemValidationConfig2.zipTest shouldBe false
+                fileItemValidationConfig2.zipTest shouldBe true
                 fileItemValidationConfig2.logFileExists shouldBe false
 
                 val directoryItemValidationConfig2 = lastProfile.directoryItemValidationConfig
-                directoryItemValidationConfig2.qtyAtLeastAsInPreviousItem shouldBe false
-                directoryItemValidationConfig2.fileSizeAtLeastAsPrevious shouldBe false
+                directoryItemValidationConfig2.filesQtyAtLeastAsInPrevious shouldBe false
+                directoryItemValidationConfig2.sizeAtLeastAsPrevious shouldBe true
+                directoryItemValidationConfig2.fileSizeAtLeastAsInPrevious shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -95,8 +97,15 @@ class ReadConfigFromFileTest: StringSpec({
                 result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
 
                 val directoryItemValidationConfig = result.b.defaultProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
-                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe true
+                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
+                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
+
+                val fileItemValidationConfig = result.b.defaultProfile.fileItemValidationConfig
+                fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
+                fileItemValidationConfig.md5FileCheck shouldBe true
+                fileItemValidationConfig.logFileExists shouldBe true
+                fileItemValidationConfig.zipTest shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -130,14 +139,15 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.directoryNameFilter.pattern shouldBe "\\d{3}-\\d{6}"
 
                 val fileItemValidationConfig = firstProfile.fileItemValidationConfig
-                fileItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe false
+                fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
                 fileItemValidationConfig.md5FileCheck shouldBe true
-                fileItemValidationConfig.zipTest shouldBe false
+                fileItemValidationConfig.zipTest shouldBe true
                 fileItemValidationConfig.logFileExists shouldBe false
 
                 val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.qtyAtLeastAsInPreviousItem shouldBe true
-                directoryItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe false
+                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
+                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }

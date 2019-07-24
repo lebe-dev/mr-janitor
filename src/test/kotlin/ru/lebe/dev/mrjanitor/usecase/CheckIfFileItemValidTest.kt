@@ -29,12 +29,12 @@ internal class CheckIfFileItemValidTest {
     private val sampleBaseFileName = "sample-archive"
 
     private val validationConfig = FileItemValidationConfig(
-        fileSizeAtLeastAsPrevious = false,
+        sizeAtLeastAsPrevious = false,
         md5FileCheck = false, zipTest = false, logFileExists = false
     )
 
     private val checkAllValidationConfig = FileItemValidationConfig(
-        fileSizeAtLeastAsPrevious = true,
+        sizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true,
         logFileExists = true
     )
@@ -169,7 +169,7 @@ internal class CheckIfFileItemValidTest {
 
         val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
         val validationConfig = FileItemValidationConfig(
-            fileSizeAtLeastAsPrevious = true,
+            sizeAtLeastAsPrevious = true,
             md5FileCheck = false, zipTest = false, logFileExists = true
         )
 
@@ -195,7 +195,7 @@ internal class CheckIfFileItemValidTest {
     @Test
     fun `Return false if file-item has smaller size than previous one`() {
         val validationConfig = FileItemValidationConfig(
-            fileSizeAtLeastAsPrevious = true, md5FileCheck = false,
+            sizeAtLeastAsPrevious = true, md5FileCheck = false,
             zipTest = false, logFileExists = false
         )
 

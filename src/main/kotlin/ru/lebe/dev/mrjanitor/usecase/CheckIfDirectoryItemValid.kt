@@ -31,7 +31,7 @@ class CheckIfDirectoryItemValid(
 
             var nextCheckLock = false
 
-            if (directoryValidationConfig.qtyAtLeastAsInPreviousItem && previousDirectoryItem.isDefined()) {
+            if (directoryValidationConfig.filesQtyAtLeastAsInPrevious && previousDirectoryItem.isDefined()) {
 
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
@@ -55,7 +55,7 @@ class CheckIfDirectoryItemValid(
 
             }
 
-            if (!nextCheckLock && directoryValidationConfig.fileSizeAtLeastAsPrevious) {
+            if (!nextCheckLock && directoryValidationConfig.sizeAtLeastAsPrevious) {
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
                 if (directoryItem.size >= previousItem.size) {

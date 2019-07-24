@@ -35,12 +35,13 @@ internal class CheckIfDirectoryItemValidTest {
     private lateinit var useCase: CheckIfDirectoryItemValid
 
     private val directoryValidationConfig = DirectoryItemValidationConfig(
-        fileSizeAtLeastAsPrevious = true,
-        qtyAtLeastAsInPreviousItem = false
+        sizeAtLeastAsPrevious = true,
+        filesQtyAtLeastAsInPrevious = false,
+        fileSizeAtLeastAsInPrevious = false
     )
 
     private val fileItemValidationConfig = FileItemValidationConfig(
-        fileSizeAtLeastAsPrevious = true,
+        sizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true, logFileExists = true
     )
 
@@ -130,7 +131,7 @@ internal class CheckIfDirectoryItemValidTest {
         assertFalse(
             useCase.isValid(
                 directoryItem, Some(getPreviousItem(fileItems = listOf(fileItem2, fileItem1))),
-                directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
                 fileItemValidationConfig
             )
         )
@@ -170,7 +171,7 @@ internal class CheckIfDirectoryItemValidTest {
                 assertFalse(
                     useCase.isValid(
                         directoryItem, None,
-                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = false),
+                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = false),
                         fileItemValidationConfig
                     )
                 )
@@ -232,7 +233,7 @@ internal class CheckIfDirectoryItemValidTest {
                 assertTrue(
                     useCase.isValid(
                         directoryItem, Some(previousDirectoryItem),
-                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
                         fileItemValidationConfig
                     )
                 )
@@ -276,7 +277,7 @@ internal class CheckIfDirectoryItemValidTest {
                 assertFalse(
                     useCase.isValid(
                         directoryItem, None,
-                        directoryValidationConfig.copy(qtyAtLeastAsInPreviousItem = true),
+                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
                         fileItemValidationConfig
                     )
                 )
