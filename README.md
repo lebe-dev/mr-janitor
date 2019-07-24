@@ -39,3 +39,31 @@ directory items for clean up (4):
 items total: 3
 
 ```
+
+## Smart checks
+
+Each directory or file item can be validated.
+
+### 1. Directory item - Total size at least as in previous item
+
+Current directory item has total file size at least as previous item.
+
+How to enable:
+
+```
+item-validation {
+    file-size-at-least-as-previous = true
+}
+```
+
+### 2. Directory item - File items count at least as in previous item
+
+Current directory item contains files amount at least as in previous directory.
+
+How to enable:
+
+```
+item-validation {
+    qty-at-least-as-previous-valid = true
+}
+```
