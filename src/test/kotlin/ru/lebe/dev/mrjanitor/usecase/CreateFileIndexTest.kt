@@ -17,7 +17,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 internal class CreateFileIndexTest {
 
@@ -47,7 +47,10 @@ internal class CreateFileIndexTest {
         val secondFile = Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(indexPath, StorageUnit.FILE, Regex(Defaults.FILENAME_FILTER_PATTERN))
+        val results = useCase.create(
+            indexPath, StorageUnit.FILE,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(results.isRight())
 
@@ -90,7 +93,10 @@ internal class CreateFileIndexTest {
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN))
+        val results = useCase.create(
+            indexPath, StorageUnit.DIRECTORY,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
 
         assertTrue(results.isRight())
 
@@ -135,7 +141,8 @@ internal class CreateFileIndexTest {
     @Test
     fun `Return error if path doesn't exist`() {
         val result = useCase.create(
-            File("does-not-exist").toPath(), StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+            File("does-not-exist").toPath(), StorageUnit.DIRECTORY,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
         )
 
         assertTrue(result.isLeft())
@@ -150,7 +157,10 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is File)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(directory, StorageUnit.FILE, Regex(Defaults.FILENAME_FILTER_PATTERN))
+        val results = useCase.create(
+                directory, StorageUnit.FILE,
+                Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
         assertTrue(results.isRight())
 
         when(results) {
@@ -168,7 +178,10 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is Directory)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(directory, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN))
+        val results = useCase.create(
+            directory, StorageUnit.DIRECTORY,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        )
         assertTrue(results.isRight())
 
         when(results) {
@@ -193,7 +206,9 @@ internal class CreateFileIndexTest {
         Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomFileData()) }
         Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomFileData()) }
 
-        val results = useCase.create(indexPath, StorageUnit.FILE, Regex(fileNameFilter))
+        val results = useCase.create(
+            indexPath, StorageUnit.FILE, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(fileNameFilter)
+        )
 
         assertTrue(results.isRight())
 
@@ -231,7 +246,9 @@ internal class CreateFileIndexTest {
             Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomFileData()) }
         }
 
-        val results = useCase.create(indexPath, StorageUnit.DIRECTORY, Regex(fileNameFilter))
+        val results = useCase.create(
+            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(fileNameFilter)
+        )
 
         assertTrue(results.isRight())
 

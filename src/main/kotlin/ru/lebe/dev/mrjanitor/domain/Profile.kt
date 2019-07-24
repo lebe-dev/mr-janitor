@@ -10,6 +10,7 @@ data class Profile(
     val storageUnit: StorageUnit,
 
     val fileNameFilter: Regex,
+    val directoryNameFilter: Regex,
 
     val keepCopies: Int,
 

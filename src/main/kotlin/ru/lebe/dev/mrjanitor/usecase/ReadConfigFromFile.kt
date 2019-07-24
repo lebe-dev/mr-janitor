@@ -13,6 +13,7 @@ import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.Defaults.DIRECTORY_NAME_FILTER_PATTERN
 import ru.lebe.dev.mrjanitor.util.Defaults.FILENAME_FILTER_PATTERN
 import ru.lebe.dev.mrjanitor.util.Defaults.PROFILE_NAME
 import ru.lebe.dev.mrjanitor.util.getInt
@@ -75,6 +76,7 @@ class ReadConfigFromFile {
         path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
         keepCopies = Defaults.DEFAULT_KEEP_COPIES,
         fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
+        directoryNameFilter = Regex(DIRECTORY_NAME_FILTER_PATTERN),
         fileItemValidationConfig = FileItemValidationConfig(
             fileSizeAtLeastAsPrevious = true,
             md5FileCheck = true, zipTest = true, logFileExists = true
@@ -149,6 +151,11 @@ class ReadConfigFromFile {
                     storageUnit = getStorageUnit(config, profileName, defaultProfile.storageUnit),
                     fileNameFilter = Regex(
                         config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
+                    ),
+                    directoryNameFilter = Regex(
+                        config.getString(
+                        "$profileName.directory-name-filter", defaultProfile.directoryNameFilter.pattern
+                        )
                     ),
                     keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
                     fileItemValidationConfig = getFileItemValidationConfig(

@@ -9,7 +9,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import ru.lebe.dev.mrjanitor.domain.*
+import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.FileItem
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.Profile
+import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
@@ -79,6 +83,7 @@ internal class GetFileItemsForCleanUpTest {
             path = indexPath.toString(),
             storageUnit = StorageUnit.FILE,
             fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
             keepCopies = 5,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,

@@ -5,6 +5,10 @@ config {
 	    // Get only files with names matches regular expression
 	    file-name-filter = ".*\.zip$"
 
+	    // Get only directories with names matches regular expression
+	    // Default: YYYY-MM-DD
+	    directory-name-filter = "\d{4}-\d{2}-\d{2}"
+
 	    file-size-at-least-as-previous = true
 
 	    keep-copies = 7
@@ -18,9 +22,6 @@ config {
 
         // Backup storage unit is directory
         unit = "directory"
-
-        // Expected that each backup directory has name in specified date format
-        directory-date-format = "yyyy-MM-dd"
 
         keep-copies = 7 // How much copies to store
 

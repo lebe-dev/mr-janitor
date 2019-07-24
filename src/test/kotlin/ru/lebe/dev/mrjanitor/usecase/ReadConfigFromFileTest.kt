@@ -31,6 +31,7 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.path shouldBe "."
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
                 firstProfile.fileNameFilter.pattern shouldBe ".*\\.ZIP$"
+                firstProfile.directoryNameFilter.pattern shouldBe "\\d{10}-\\d{2}"
                 firstProfile.keepCopies shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
@@ -54,6 +55,7 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.path shouldBe "."
                 lastProfile.storageUnit shouldBe StorageUnit.FILE
                 lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
+                lastProfile.directoryNameFilter.pattern shouldBe "\\d{4}"
                 lastProfile.keepCopies shouldBe 14
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
@@ -125,6 +127,7 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.keepCopies shouldBe 7
                 firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
                 firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
+                firstProfile.directoryNameFilter.pattern shouldBe "\\d{3}-\\d{6}"
 
                 val fileItemValidationConfig = firstProfile.fileItemValidationConfig
                 fileItemValidationConfig.fileSizeAtLeastAsPrevious shouldBe false

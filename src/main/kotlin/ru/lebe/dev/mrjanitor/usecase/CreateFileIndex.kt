@@ -17,13 +17,15 @@ import java.nio.file.Path
 class CreateFileIndex {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun create(path: Path, storageUnit: StorageUnit, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> {
+    fun create(path: Path, storageUnit: StorageUnit, directoryNameFilter: Regex,
+               fileNameFilter: Regex): Either<OperationResult, PathFileIndex> {
+
         log.info("create file index for path '$path'")
         log.info("- storage-unit: $storageUnit")
 
         return if (path.toFile().exists()) {
             when(storageUnit) {
-                StorageUnit.DIRECTORY -> createIndexForDirectories(path, fileNameFilter)
+                StorageUnit.DIRECTORY -> createIndexForDirectories(path, directoryNameFilter, fileNameFilter)
                 StorageUnit.FILE -> createIndexForFiles(path, fileNameFilter)
             }
         } else {
@@ -32,8 +34,10 @@ class CreateFileIndex {
         }
     }
 
-    private fun createIndexForDirectories(path: Path, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
-        when(val directoryItems = getDirectoryItemsFromPath(path, fileNameFilter)) {
+    private fun createIndexForDirectories(path: Path, directoryNameFilter: Regex,
+                                          fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
+
+        when(val directoryItems = getDirectoryItemsFromPath(path, directoryNameFilter, fileNameFilter)) {
             is Success -> {
                 log.info("index has been created")
                 log.debug(directoryItems.value.toString())
@@ -76,10 +80,13 @@ class CreateFileIndex {
             }
         }
 
-    private fun getDirectoryItemsFromPath(path: Path, fileNameFilter: Regex) = Try<List<DirectoryItem>> {
+    private fun getDirectoryItemsFromPath(path: Path, directoryNameFilter: Regex,
+                                          fileNameFilter: Regex) = Try<List<DirectoryItem>> {
+
         val results = arrayListOf<DirectoryItem>()
 
-        path.toFile().listFiles()?.filter { it.isDirectory }?.forEach { directory ->
+        path.toFile().listFiles()?.filter { it.isDirectory && directoryNameFilter.matches(it.name) }
+                                 ?.sortedBy { it.name }?.forEach { directory ->
 
             when(val fileItems = getFileItemsFromPath(directory.toPath(), fileNameFilter)) {
                 is Success -> {

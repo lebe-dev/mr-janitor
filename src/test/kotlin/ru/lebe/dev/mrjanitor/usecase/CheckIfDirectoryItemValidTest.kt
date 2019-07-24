@@ -151,7 +151,8 @@ internal class CheckIfDirectoryItemValidTest {
         }
 
         val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+            indexPath, StorageUnit.DIRECTORY,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
         )
 
         assertTrue(pathIndex.isRight())
@@ -204,7 +205,7 @@ internal class CheckIfDirectoryItemValidTest {
         }
 
         val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(".*\\.zip$")
+            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(".*\\.zip$")
         )
 
         assertTrue(pathIndex.isRight())
@@ -256,7 +257,8 @@ internal class CheckIfDirectoryItemValidTest {
         }
 
         val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.FILENAME_FILTER_PATTERN)
+            indexPath, StorageUnit.DIRECTORY,
+            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
         )
 
         assertTrue(pathIndex.isRight())

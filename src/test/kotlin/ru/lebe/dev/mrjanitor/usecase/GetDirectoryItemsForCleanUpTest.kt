@@ -20,7 +20,7 @@ import ru.lebe.dev.mrjanitor.util.TestUtils.getDateFromString
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 internal class GetDirectoryItemsForCleanUpTest {
 
@@ -108,6 +108,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             path = indexPath.toString(),
             storageUnit = StorageUnit.DIRECTORY,
             fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
             keepCopies = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
@@ -143,4 +144,99 @@ internal class GetDirectoryItemsForCleanUpTest {
             is Either.Left -> throw Exception("assert exception")
         }
     }
+
+    @Test
+    fun `Respect directory name filter`() {
+        createDirectory(
+                indexPath, "zimbambwa"
+        ) { directoryPath ->
+            createValidArchiveFiles(directoryPath, 2)
+        }
+
+        createDirectory(
+                indexPath, getDateFolderName(getDateFromString("2019-07-09"))
+        ) { directoryPath ->
+            createFilesWithInvalidHash(directoryPath, 1)
+            createFilesWithAbsentHashFile(directoryPath, 1)
+            createValidArchiveFiles(directoryPath, 2) // GOOD
+        }
+
+        createValidDirectory("2019-07-10", 5)
+
+        // INVALID DATE FORMAT
+        createDirectory(
+                indexPath, "20190711"
+        ) { directoryPath ->
+            createValidArchiveFiles(directoryPath, 2)
+        }
+
+        createValidDirectory("2019-07-13", 6)
+
+        createDirectory(indexPath, getDateFolderName(getDateFromString("2019-07-14"))) {}
+
+        createValidDirectory("2019-07-15", 7)
+
+        createDirectory(
+                indexPath, getDateFolderName(getDateFromString("2019-07-16"))
+        ) { directoryPath ->
+            createFilesWithInvalidHash(directoryPath, 1)
+            createFilesWithAbsentHashFile(directoryPath, 1)
+        }
+
+        // INVALID DATE FORMAT
+        createDirectory(
+                indexPath, "20190717"
+        ) { directoryPath ->
+            createValidArchiveFiles(directoryPath, 2)
+        }
+
+        val profile = Profile(
+                name = "test",
+                path = indexPath.toString(),
+                storageUnit = StorageUnit.DIRECTORY,
+                fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+                directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
+                keepCopies = 2,
+                fileItemValidationConfig = fileItemValidationConfig,
+                directoryItemValidationConfig = directoryItemValidationConfig,
+                cleanAction = CleanAction.JUST_NOTIFY
+        )
+
+        val results = useCase.getItems(profile)
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                val validButOldItems = results.b.filter { it.valid }
+
+                assertEquals(1, validButOldItems.size)
+
+                val invalidItems = results.b.filter { !it.valid }
+                assertEquals(3, invalidItems.size)
+
+                listOf("2019-07-13", "2019-07-15").all { directoryName ->
+                    var findResult = false
+
+                    val directoryFound = results.b.find { it.name == directoryName }
+
+                    if (directoryFound != null) {
+                        assertTrue(directoryFound.valid)
+                        findResult = true
+                    }
+
+                    findResult
+                }
+            }
+            is Either.Left -> throw Exception("assert exception")
+        }
+    }
+
+    private fun createValidDirectory(directoryDate: String, filesAmount: Int) {
+        createDirectory(indexPath, getDateFolderName(getDateFromString(directoryDate))) {
+            createValidArchiveFiles(it, filesAmount)
+        }
+    }
+
+    private fun getDateFolderName(date: Date): String = SimpleDateFormat("yyyy-MM-dd").format(date)
 }
