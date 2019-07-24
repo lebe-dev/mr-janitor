@@ -183,7 +183,7 @@ class ReadConfigFromFile {
         }
 
     private fun getDirectoryItemValidationConfig(config: Config, sectionPath: String,
-                                                 defaultValidationConfig: DirectoryItemValidationConfig): DirectoryItemValidationConfig {
+                             defaultValidationConfig: DirectoryItemValidationConfig): DirectoryItemValidationConfig {
 
         return if (config.hasPath(sectionPath)) {
 
