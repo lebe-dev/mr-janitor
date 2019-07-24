@@ -3,6 +3,7 @@ package ru.lebe.dev.mrjanitor.usecase
 import arrow.core.Either
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -121,6 +122,8 @@ internal class GetDirectoryItemsForCleanUpTest {
 
         when(results) {
             is Either.Right -> {
+                assertEquals(5, results.b.size)
+
                 val validButOldItems = results.b.filter { it.valid }
 
                 assertEquals(2, validButOldItems.size)
@@ -128,17 +131,8 @@ internal class GetDirectoryItemsForCleanUpTest {
                 val invalidItems = results.b.filter { !it.valid }
                 assertEquals(3, invalidItems.size)
 
-                listOf("2019-07-13", "2019-07-15").all { directoryName ->
-                    var findResult = false
-
-                    val directoryFound = results.b.find { it.name == directoryName }
-
-                    if (directoryFound != null) {
-                        assertTrue(directoryFound.valid)
-                        findResult = true
-                    }
-
-                    findResult
+                listOf("2019-07-13", "2019-07-15").forEach { directoryName ->
+                    assertNull(results.b.find { it.name == directoryName })
                 }
             }
             is Either.Left -> throw Exception("assert exception")
