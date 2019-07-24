@@ -81,7 +81,7 @@ class CreateFileIndex {
 
         path.toFile().listFiles()?.filter { it.isDirectory }?.forEach { directory ->
 
-            when(val fileItems = getFileItemsFromPath(directory.absoluteFile.toPath(), fileNameFilter)) {
+            when(val fileItems = getFileItemsFromPath(directory.toPath(), fileNameFilter)) {
                 is Success -> {
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
