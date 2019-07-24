@@ -45,7 +45,7 @@ class GetDirectoryItemsForCleanUp(
                 }
 
                 val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
-                                                                 .sortedBy { it.path.toFile().lastModified() }
+                                                                 .sortedBy { it.name }
                                                                  .takeLast(profile.keepCopies)
                                                                  .map { it.path.toString() }
 
