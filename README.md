@@ -52,7 +52,7 @@ How to enable:
 
 ```
 item-validation {
-    file-size-at-least-as-previous = true
+    size-at-least-as-previous = true
 }
 ```
 
@@ -65,5 +65,17 @@ How to enable:
 ```
 item-validation {
     qty-at-least-as-previous-valid = true
+}
+```
+
+### 3. File item - Size should be at least as for previous file item
+
+
+
+How to enable:
+
+```
+item-validation {
+    size-at-least-as-previous = true
 }
 ```
