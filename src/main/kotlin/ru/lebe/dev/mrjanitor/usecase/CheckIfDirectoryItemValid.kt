@@ -21,21 +21,24 @@ class CheckIfDirectoryItemValid(
                 directoryValidationConfig: DirectoryItemValidationConfig,
                 fileValidationConfig: FileItemValidationConfig): Boolean {
 
-        log.info("---")
+        log.info("--------------")
         log.info("check if directory-item is valid, path '${directoryItem.path}'")
         log.trace(directoryItem.toString())
+
+        log.debug("directory validation config:")
+        log.debug(directoryValidationConfig.toString())
+
+        log.debug("file validation config:")
+        log.debug(fileValidationConfig.toString())
 
         var result = false
 
         if (isBasicValidationSuccess(directoryItem)) {
-
             var nextCheckLock = false
 
             if (directoryValidationConfig.filesQtyAtLeastAsInPrevious && previousDirectoryItem.isDefined()) {
-
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
-
-                log.debug("previous-item:")
+                log.trace("previous-item:")
                 log.trace(previousItem.toString())
 
                 log.debug("  - files in current directory: ${directoryItem.fileItems.size}")
@@ -48,25 +51,30 @@ class CheckIfDirectoryItemValid(
                     log.debug("- all file items are valid: $result")
 
                 } else {
-                    log.debug("- directory contains expected file-items count: false")
+                    log.warn("- directory contains expected file-items count: false")
                 }
 
                 if (!result) { nextCheckLock = true }
-
             }
 
-            if (!nextCheckLock && directoryValidationConfig.sizeAtLeastAsPrevious) {
+            if (!nextCheckLock && directoryValidationConfig.sizeAtLeastAsPrevious &&
+                previousDirectoryItem.isDefined()) {
+
                 val previousItem = previousDirectoryItem.getOrElse { getInvalidDirectoryItem() }
 
                 if (directoryItem.size >= previousItem.size) {
+                    log.debug("- current directory size >= previous: $result")
                     result = true
+
+                } else {
+                    log.warn("- current directory '${directoryItem.name}' size ${directoryItem.size} < " +
+                             "previous directory '${previousItem.name}' size ${previousItem.size}")
                 }
 
                 if (!result) { nextCheckLock = true }
             }
 
             if (!nextCheckLock) {
-
                 result = directoryItem.fileItems.all { fileItem ->
 
                     val previousFileItem: Option<FileItem> = getPreviousFileItem(
@@ -80,7 +88,6 @@ class CheckIfDirectoryItemValid(
                 }
 
                 log.debug("- all file items are valid: $result")
-
             }
 
         } else {
@@ -109,6 +116,7 @@ class CheckIfDirectoryItemValid(
             if (directoryItem.size > 0) {
 
                 if (directoryItem.fileItems.isNotEmpty()) {
+                    log.debug("- basic checks: ok")
                     result = true
 
                 } else {

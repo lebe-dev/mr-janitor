@@ -19,7 +19,7 @@ class CommandLineInteractor(
     fun executeDryRun(profiles: List<Profile>) {
         profiles.forEach { profile ->
 
-            presenter.showMessage("--------------------------")
+            presenter.showMessage("=============================")
             presenter.showMessage("profile '${profile.name}'")
             presenter.showMessage("- path: '${profile.path}'")
             presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
@@ -62,8 +62,7 @@ class CommandLineInteractor(
                 presenter.showMessage("  - files: ${directoryItem.fileItems.size}")
                 presenter.showMessage("  - valid: ${directoryItem.valid}")
                 presenter.showMessage(
-                    "  - last-modified: " +
-                            "${Date(directoryItem.path.toFile().lastModified())}"
+                    "  - last-modified: ${Date(directoryItem.path.toFile().lastModified())}"
                 )
             }
 

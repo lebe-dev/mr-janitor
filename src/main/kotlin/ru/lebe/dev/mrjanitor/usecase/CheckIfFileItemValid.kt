@@ -19,7 +19,7 @@ class CheckIfFileItemValid {
                 validationConfig: FileItemValidationConfig): Boolean {
 
         log.info("---")
-        log.info("check if file-item valid: '${fileItem.path}'")
+        log.info("check if file-item valid: '${fileItem.path}'..")
         log.debug(fileItem.toString())
         log.debug("validation config:")
         log.debug(validationConfig.toString())
