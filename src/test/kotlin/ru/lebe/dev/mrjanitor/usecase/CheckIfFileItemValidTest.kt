@@ -30,13 +30,15 @@ internal class CheckIfFileItemValidTest {
 
     private val validationConfig = FileItemValidationConfig(
         sizeAtLeastAsPrevious = false,
-        md5FileCheck = false, zipTest = false, logFileExists = false
+        md5FileCheck = false, zipTest = false, logFileExists = false,
+        useCustomValidator = false, customValidatorCommand = ""
     )
 
     private val checkAllValidationConfig = FileItemValidationConfig(
         sizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true,
-        logFileExists = true
+        logFileExists = true,
+        useCustomValidator = false, customValidatorCommand = ""
     )
 
     private val md5ValidationConfig = validationConfig.copy(md5FileCheck = true)
@@ -170,7 +172,8 @@ internal class CheckIfFileItemValidTest {
         val (archiveFile, _, logFile) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
         val validationConfig = FileItemValidationConfig(
             sizeAtLeastAsPrevious = true,
-            md5FileCheck = false, zipTest = false, logFileExists = true
+            md5FileCheck = false, zipTest = false, logFileExists = true,
+            useCustomValidator = false, customValidatorCommand = ""
         )
 
         val fileItem = FileItem(
@@ -196,11 +199,14 @@ internal class CheckIfFileItemValidTest {
     fun `Return false if file-item has smaller size than previous one`() {
         val validationConfig = FileItemValidationConfig(
             sizeAtLeastAsPrevious = true, md5FileCheck = false,
-            zipTest = false, logFileExists = false
+            zipTest = false, logFileExists = false,
+            useCustomValidator = false, customValidatorCommand = ""
         )
 
-        val firstFile = Paths.get(indexPath.toString(), "file1.txt").toFile().apply { writeText("some-data") }
-        val secondFile = Paths.get(indexPath.toString(), "file2.txt").toFile().apply { writeText("some-d") }
+        val firstFile = Paths.get(indexPath.toString(), "file1.txt")
+                             .toFile().apply { writeText("some-data") }
+        val secondFile = Paths.get(indexPath.toString(), "file2.txt")
+                              .toFile().apply { writeText("some-d") }
 
         val previousFileItem = FileItem(
             path = firstFile.toPath(),
@@ -238,5 +244,33 @@ internal class CheckIfFileItemValidTest {
         val fileItem = getFileItem(archiveFile, md5Hash)
 
         assertTrue(useCase.isValid(fileItem, Some(previousFileItem), checkAllValidationConfig))
+    }
+
+    @Test
+    fun `Return false for invalid custom check command`() {
+        val fileItemValidationConfig = checkAllValidationConfig.copy(
+            sizeAtLeastAsPrevious = false, logFileExists = false, md5FileCheck = false,
+            useCustomValidator = true, customValidatorCommand = "invalid-custom-command"
+        )
+
+        val (archiveFile, _, _) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
+
+        val fileItem = getFileItem(archiveFile)
+
+        assertFalse(useCase.isValid(fileItem, None, fileItemValidationConfig))
+    }
+
+    @Test
+    fun `Return true if custom check command succeed`() {
+        val fileItemValidationConfig = checkAllValidationConfig.copy(
+                sizeAtLeastAsPrevious = false, logFileExists = false, md5FileCheck = false,
+                useCustomValidator = true, customValidatorCommand = "hostname"
+        )
+
+        val (archiveFile, _, _) = getSampleArchiveFileWithCompanions(indexPath, sampleBaseFileName)
+
+        val fileItem = getFileItem(archiveFile)
+
+        assertTrue(useCase.isValid(fileItem, None, fileItemValidationConfig))
     }
 }

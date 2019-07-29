@@ -20,5 +20,15 @@ data class FileItemValidationConfig(
      * Expect log companion file
      * Examples: archive.log or archive.zip.log
      */
-    val logFileExists: Boolean
+    val logFileExists: Boolean,
+
+    /**
+     * Use custom validator command
+     */
+    val useCustomValidator: Boolean,
+
+    /**
+     * Shell command for validation
+     */
+    val customValidatorCommand: String
 )

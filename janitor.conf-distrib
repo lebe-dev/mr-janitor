@@ -41,6 +41,12 @@ config {
                 // Expect log companion file
                 // Examples: archive.log or archive.zip.log
                 log-file-exists = true
+
+                // Use custom file validator with shell command
+                use-custom-validator = false
+
+                // Shell command for files validation
+                custom-validator-command = "gzip -t ${fileName}"
             }
         }
 

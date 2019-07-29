@@ -40,6 +40,8 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig1.md5FileCheck shouldBe true
                 fileItemValidationConfig1.zipTest shouldBe false
                 fileItemValidationConfig1.logFileExists shouldBe false
+                fileItemValidationConfig1.useCustomValidator shouldBe true
+                fileItemValidationConfig1.customValidatorCommand shouldBe "zip -t \${filename}"
 
                 firstProfile.directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
 
@@ -65,6 +67,8 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig2.md5FileCheck shouldBe true
                 fileItemValidationConfig2.zipTest shouldBe true
                 fileItemValidationConfig2.logFileExists shouldBe false
+                fileItemValidationConfig2.useCustomValidator shouldBe false
+                fileItemValidationConfig2.customValidatorCommand shouldBe "gzip -t \${filename}"
 
                 val directoryItemValidationConfig2 = lastProfile.directoryItemValidationConfig
                 directoryItemValidationConfig2.filesQtyAtLeastAsInPrevious shouldBe false
@@ -143,6 +147,8 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig.md5FileCheck shouldBe true
                 fileItemValidationConfig.zipTest shouldBe true
                 fileItemValidationConfig.logFileExists shouldBe false
+                fileItemValidationConfig.useCustomValidator shouldBe true
+                fileItemValidationConfig.customValidatorCommand shouldBe "blablabla \${filename}"
 
                 val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
                 directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true

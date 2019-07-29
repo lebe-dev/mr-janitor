@@ -3,9 +3,12 @@ package ru.lebe.dev.mrjanitor.usecase
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.core.Try
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.CommandExecutor
+import ru.lebe.dev.mrjanitor.util.Defaults
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -58,6 +61,12 @@ class CheckIfFileItemValid {
                 result = isArchiveFileCheckSuccess(fileItem)
 
                 log.debug("- zip-test success: $result")
+                if (!result) { nextCheckLock = true }
+            }
+
+            if (!nextCheckLock && validationConfig.useCustomValidator) {
+                result = customValidationSuccess(fileItem, validationConfig.customValidatorCommand)
+                log.debug("- custom validation check success: $result")
             }
 
         } else {
@@ -68,6 +77,38 @@ class CheckIfFileItemValid {
 
         return result
     }
+
+    private fun customValidationSuccess(fileItem: FileItem, validatorCommand: String): Boolean {
+        var result = false
+
+        val templateVariables = mapOf("fileName" to fileItem.name)
+
+        when(val executionResult = CommandExecutor.execute(
+            command = applyVariablesToCommandLine(validatorCommand, templateVariables),
+            workDir = fileItem.path.toFile().parentFile.toPath().toFile()
+        )) {
+            is Try.Success -> {
+                if (executionResult.value.exitCode == Defaults.EXIT_CODE_OK) {
+                    result = true
+
+                } else {
+                    log.error("validation error")
+                }
+            }
+            is Try.Failure -> log.error("command execution error")
+        }
+
+        return result
+    }
+
+    private fun applyVariablesToCommandLine(command: String, variables: Map<String, String>): String {
+        var result: String = command
+
+        variables.forEach { (key, value) -> result = result.replace("\${$key}", value) }
+
+        return result
+    }
+
 
     private fun isPreviousFileItemSizeCheckSuccess(currentFileItem: FileItem,
                                                    previousFileItem: Option<FileItem>) =

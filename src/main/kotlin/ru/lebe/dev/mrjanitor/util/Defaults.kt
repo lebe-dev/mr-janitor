@@ -5,6 +5,8 @@ import ru.lebe.dev.mrjanitor.domain.StorageUnit
 object Defaults {
     const val PROFILE_NAME = "defaults"
 
+    const val EXIT_CODE_OK = 0
+
     const val FILENAME_FILTER_PATTERN = ".*"
     const val DIRECTORY_NAME_FILTER_PATTERN = "\\d{4}-\\d{2}-\\d{2}"
 

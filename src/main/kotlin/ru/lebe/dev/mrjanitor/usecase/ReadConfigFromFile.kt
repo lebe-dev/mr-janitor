@@ -85,7 +85,8 @@ class ReadConfigFromFile {
         directoryNameFilter = Regex(DIRECTORY_NAME_FILTER_PATTERN),
         fileItemValidationConfig = FileItemValidationConfig(
             sizeAtLeastAsPrevious = true,
-            md5FileCheck = true, zipTest = true, logFileExists = true
+            md5FileCheck = true, zipTest = true, logFileExists = true,
+            useCustomValidator = false, customValidatorCommand = ""
         ),
         directoryItemValidationConfig = DirectoryItemValidationConfig(
             sizeAtLeastAsPrevious = true, filesQtyAtLeastAsInPrevious = true,
@@ -225,6 +226,12 @@ class ReadConfigFromFile {
                 ),
                 logFileExists = getBooleanPropertyValue(
                     config, "$sectionPath.log-file-exists", defaultValidationConfig.logFileExists
+                ),
+                useCustomValidator = getBooleanPropertyValue(
+                    config, "$sectionPath.use-custom-validator", defaultValidationConfig.useCustomValidator
+                ),
+                customValidatorCommand = config.getString(
+                "$sectionPath.custom-validator-command", defaultValidationConfig.customValidatorCommand
                 )
             )
 

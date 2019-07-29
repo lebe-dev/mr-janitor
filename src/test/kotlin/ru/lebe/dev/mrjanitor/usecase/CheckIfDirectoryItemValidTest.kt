@@ -44,7 +44,8 @@ internal class CheckIfDirectoryItemValidTest {
 
     private val fileItemValidationConfig = FileItemValidationConfig(
         sizeAtLeastAsPrevious = true,
-        md5FileCheck = true, zipTest = true, logFileExists = true
+        md5FileCheck = true, zipTest = true, logFileExists = true,
+        useCustomValidator = false, customValidatorCommand = ""
     )
 
     @BeforeEach
