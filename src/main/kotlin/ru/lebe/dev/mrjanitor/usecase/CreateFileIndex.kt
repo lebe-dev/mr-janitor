@@ -125,6 +125,7 @@ class CreateFileIndex {
 
         path.toFile().listFiles()?.filter { it.isFile && fileNameFilter.matches(it.name) }
                                  ?.filterNot { it.extension.toLowerCase() in listOf("md5", "log") }
+                                 ?.sortedBy { it.name }
                                  ?.forEach { file ->
             results += FileItem(
                 path = file.absoluteFile.toPath(),
@@ -141,7 +142,5 @@ class CreateFileIndex {
     private fun getMd5Hash(file: File, md5HashRequired: Boolean) =
             if (md5HashRequired) {
                 file.inputStream().use { DigestUtils.md5Hex(it) }
-            } else {
-                ""
-            }
+            } else { "" }
 }
