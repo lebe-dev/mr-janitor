@@ -6,23 +6,24 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
+import ru.lebe.dev.mrjanitor.domain.FileItem
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.UUID
 
-internal class CleanUpDirectoryItemsTest {
+internal class CleanUpStorageItemsTest {
 
     private lateinit var temporaryDirectory: Path
 
-    private lateinit var useCase: CleanUpDirectoryItems
+    private lateinit var useCase: CleanUpStorageItems
 
     @BeforeEach
     fun setUp() {
         temporaryDirectory = Files.createTempDirectory("")
 
-        useCase = CleanUpDirectoryItems()
+        useCase = CleanUpStorageItems()
     }
 
     @AfterEach
@@ -34,7 +35,9 @@ internal class CleanUpDirectoryItemsTest {
     fun `Directories should not exist after cleanup`() {
         val directoryItems = arrayListOf<DirectoryItem>()
 
-        listOf("2019-07-25", "2019-07-26", "2019-07-28").forEach {
+        val directoryNames = listOf("2019-07-25", "2019-07-26", "2019-07-28")
+
+        directoryNames.forEach {
             val path = createDirectory(it)
             assertTrue(path.toFile().exists())
 
@@ -49,7 +52,7 @@ internal class CleanUpDirectoryItemsTest {
 
         assertTrue(result.isSuccess())
 
-        listOf("2019-07-25", "2019-07-26", "2019-07-28").forEach {
+        directoryNames.forEach {
             assertFalse(Paths.get(temporaryDirectory.toString(), it).toFile().exists())
         }
     }
@@ -69,6 +72,35 @@ internal class CleanUpDirectoryItemsTest {
         val result = useCase.cleanUp(listOf(item))
 
         assertTrue(result.isSuccess())
+    }
+
+    @Test
+    fun `Files should not exist after cleanup`() {
+        val fileItems = arrayListOf<FileItem>()
+
+        val fileNames = listOf("bobsley", "Global", "sigurni")
+
+        fileNames.forEach {
+
+            val filePath = createFile(temporaryDirectory, it)
+
+            assertTrue(filePath.exists())
+
+            fileItems.add(
+                FileItem(
+                    path = filePath.toPath(), name = filePath.name, size = filePath.length(), valid = true,
+                    hash = "gq589gjwo4kgjfg"
+                )
+            )
+        }
+
+        val result = useCase.cleanUp(fileItems)
+
+        assertTrue(result.isSuccess())
+
+        fileNames.forEach {
+            assertFalse(Paths.get(temporaryDirectory.toString(), it).toFile().exists())
+        }
     }
 
     private fun createDirectory(name: String): Path {

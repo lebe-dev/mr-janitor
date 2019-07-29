@@ -11,12 +11,20 @@ Create configuration file `janitor-conf`:
 cp janitor.conf-distrib janitor.conf 
 ```
 
+### Clean up
+
+Clean old items:
+
+```bash
+java -jar janitor.jar cleanup
+```
+
 ### Dry run
 
 Do not delete anything, just show items for clean up.
 
 ```
-java -jar janitor dry-run
+java -jar janitor.jar dry-run
 ```
 
 Example output:

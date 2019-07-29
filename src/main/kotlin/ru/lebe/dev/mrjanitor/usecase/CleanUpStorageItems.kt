@@ -2,13 +2,13 @@ package ru.lebe.dev.mrjanitor.usecase
 
 import arrow.core.Try
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.DirectoryItem
+import ru.lebe.dev.mrjanitor.domain.StorageItem
 
-class CleanUpDirectoryItems {
+class CleanUpStorageItems {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun cleanUp(items: List<DirectoryItem>): Try<Unit> = Try {
-        log.info("cleanup directory items (${items.size})")
+    fun cleanUp(items: List<StorageItem>): Try<Unit> = Try {
+        log.info("cleanup storage items (${items.size})")
         items.forEach { log.info("- '${it.name}'") }
 
         items.forEach { item ->

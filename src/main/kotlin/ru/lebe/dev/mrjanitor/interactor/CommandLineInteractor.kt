@@ -6,6 +6,7 @@ import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.presenter.AppPresenter
+import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
 import java.util.Date
@@ -13,18 +14,41 @@ import java.util.Date
 class CommandLineInteractor(
     private val getFileItemsForCleanUp: GetFileItemsForCleanUp,
     private val getDirectoryItemsForCleanUp: GetDirectoryItemsForCleanUp,
+    private val cleanUpStorageItems: CleanUpStorageItems,
     private val presenter: AppPresenter
 ) {
 
+    fun cleanup(profiles: List<Profile>) {
+        profiles.forEach { profile ->
+            showProfileBanner(profile)
+            presenter.showMessage("~ getting items for clean up..")
+
+            when(profile.storageUnit) {
+                StorageUnit.DIRECTORY -> {
+                    when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
+                        is Either.Right -> cleanUpStorageItems.cleanUp(directoryItems.b)
+                        is Either.Left -> {
+                            presenter.showError("unable to get directory items " +
+                                                "for cleanup, profile '${profile.name}'")
+                        }
+                    }
+                }
+                StorageUnit.FILE -> {
+                    when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
+                        is Either.Right -> cleanUpStorageItems.cleanUp(fileItems.b)
+                        is Either.Left -> {
+                            presenter.showError("unable to get file items " +
+                                                "for cleanup, profile '${profile.name}'")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun executeDryRun(profiles: List<Profile>) {
         profiles.forEach { profile ->
-
-            presenter.showMessage("=============================")
-            presenter.showMessage("profile '${profile.name}'")
-            presenter.showMessage("- path: '${profile.path}'")
-            presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
-            presenter.showMessage("- keep copies: ${profile.keepCopies}")
-
+            showProfileBanner(profile)
             presenter.showMessage("~ getting items for clean up..")
 
             when(profile.storageUnit) {
@@ -50,6 +74,14 @@ class CommandLineInteractor(
                 }
             }
         }
+    }
+
+    private fun showProfileBanner(profile: Profile) {
+        presenter.showMessage("=============================")
+        presenter.showMessage("profile '${profile.name}'")
+        presenter.showMessage("- path: '${profile.path}'")
+        presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
+        presenter.showMessage("- keep copies: ${profile.keepCopies}")
     }
 
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {
