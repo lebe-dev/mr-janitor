@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
-import java.nio.file.Paths
 
 class GetFileItemsForCleanUp(
     private val createFileIndex: CreateFileIndex,
@@ -20,9 +19,7 @@ class GetFileItemsForCleanUp(
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
-        return when(val fileIndex = createFileIndex.create(
-            Paths.get(profile.path), profile.storageUnit, profile.directoryNameFilter, profile.fileNameFilter
-        )) {
+        return when(val fileIndex = createFileIndex.create(profile)) {
             is Either.Right -> {
                 val validatedFileItems = fileIndex.b.fileItems.map { fileItem ->
 

@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
@@ -151,10 +153,15 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize += files2.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        val profile = Profile(
+            name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepCopies = 3,
+            directoryItemValidationConfig = directoryValidationConfig,
+            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
         )
+
+        val pathIndex = createFileIndex.create(profile)
 
         assertTrue(pathIndex.isRight())
 
@@ -205,9 +212,15 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize2 = files.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(".*\\.zip$")
+        val profile = Profile(
+                name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
+                fileNameFilter = Regex(".*\\.zip$"),
+                directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepCopies = 3,
+                directoryItemValidationConfig = directoryValidationConfig,
+                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
         )
+
+        val pathIndex = createFileIndex.create(profile)
 
         assertTrue(pathIndex.isRight())
 
@@ -257,10 +270,15 @@ internal class CheckIfDirectoryItemValidTest {
             dirTotalSize += files2.sumBy { it.length().toInt() }
         }
 
-        val pathIndex = createFileIndex.create(
-            indexPath, StorageUnit.DIRECTORY,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        val profile = Profile(
+                name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
+                fileNameFilter = Regex(".*\\.zip$"),
+                directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepCopies = 3,
+                directoryItemValidationConfig = directoryValidationConfig,
+                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
         )
+
+        val pathIndex = createFileIndex.create(profile)
 
         assertTrue(pathIndex.isRight())
 

@@ -10,23 +10,32 @@ import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.PathFileIndex
+import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import java.io.File
 import java.io.IOException
 import java.nio.file.Path
+import java.nio.file.Paths
 
 class CreateFileIndex {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun create(path: Path, storageUnit: StorageUnit, directoryNameFilter: Regex,
-               fileNameFilter: Regex): Either<OperationResult, PathFileIndex> {
+    fun create(profile: Profile): Either<OperationResult, PathFileIndex> {
+        log.info("create file index for path '${profile.path}'")
+        log.info("- storage-unit: ${profile.storageUnit}")
 
-        log.info("create file index for path '$path'")
-        log.info("- storage-unit: $storageUnit")
+        val profilePath = Paths.get(profile.path)
 
-        return if (path.toFile().exists()) {
-            when(storageUnit) {
-                StorageUnit.DIRECTORY -> createIndexForDirectories(path, directoryNameFilter, fileNameFilter)
-                StorageUnit.FILE -> createIndexForFiles(path, fileNameFilter)
+        return if (profilePath.toFile().exists()) {
+            when(profile.storageUnit) {
+                StorageUnit.DIRECTORY -> createIndexForDirectories(
+                    profilePath, profile.directoryNameFilter,
+                    profile.fileNameFilter, profile.fileItemValidationConfig.md5FileCheck
+                )
+                StorageUnit.FILE ->
+                    createIndexForFiles(
+                        profilePath, profile.fileNameFilter, profile.fileItemValidationConfig.md5FileCheck
+                    )
             }
         } else {
             log.error("path doesn't exist")
@@ -35,13 +44,14 @@ class CreateFileIndex {
     }
 
     private fun createIndexForDirectories(path: Path, directoryNameFilter: Regex,
-                                          fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
+                              fileNameFilter: Regex, md5HashRequired: Boolean): Either<OperationResult, PathFileIndex> =
 
-        when(val directoryItems = getDirectoryItemsFromPath(path, directoryNameFilter, fileNameFilter)) {
+        when(val directoryItems = getDirectoryItemsFromPath(
+                path, directoryNameFilter, fileNameFilter, md5HashRequired)
+            ) {
             is Success -> {
                 log.info("index has been created")
                 log.debug(directoryItems.value.toString())
-                Either.right(directoryItems.value)
 
                 Either.right(
                     PathFileIndex(
@@ -59,8 +69,9 @@ class CreateFileIndex {
             }
         }
 
-    private fun createIndexForFiles(path: Path, fileNameFilter: Regex): Either<OperationResult, PathFileIndex> =
-        when(val fileItems = getFileItemsFromPath(path, fileNameFilter)) {
+    private fun createIndexForFiles(path: Path, fileNameFilter: Regex,
+                                    md5HashRequired: Boolean): Either<OperationResult, PathFileIndex> =
+        when(val fileItems = getFileItemsFromPath(path, fileNameFilter, md5HashRequired)) {
             is Try.Success -> {
                 Either.right(
                     PathFileIndex(
@@ -81,14 +92,14 @@ class CreateFileIndex {
         }
 
     private fun getDirectoryItemsFromPath(path: Path, directoryNameFilter: Regex,
-                                          fileNameFilter: Regex) = Try<List<DirectoryItem>> {
+                                          fileNameFilter: Regex, md5HashRequired: Boolean) = Try<List<DirectoryItem>> {
 
-        val results = arrayListOf<DirectoryItem>()
+    val results = arrayListOf<DirectoryItem>()
 
         path.toFile().listFiles()?.filter { it.isDirectory && directoryNameFilter.matches(it.name) }
                                  ?.sortedBy { it.name }?.forEach { directory ->
 
-            when(val fileItems = getFileItemsFromPath(directory.toPath(), fileNameFilter)) {
+            when(val fileItems = getFileItemsFromPath(directory.toPath(), fileNameFilter, md5HashRequired)) {
                 is Success -> {
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
@@ -100,9 +111,7 @@ class CreateFileIndex {
                         valid = false
                     )
                 }
-                is Failure -> {
-                    throw IOException("unable to get file items for path: ${fileItems.exception.message}")
-                }
+                is Failure -> throw IOException("unable to get file items for path: ${fileItems.exception.message}")
             }
 
         }
@@ -110,7 +119,8 @@ class CreateFileIndex {
         results
     }
 
-    private fun getFileItemsFromPath(path: Path, fileNameFilter: Regex) = Try<List<FileItem>> {
+    private fun getFileItemsFromPath(path: Path, fileNameFilter: Regex,
+                                     md5HashRequired: Boolean) = Try<List<FileItem>> {
         val results = arrayListOf<FileItem>()
 
         path.toFile().listFiles()?.filter { it.isFile && fileNameFilter.matches(it.name) }
@@ -120,11 +130,18 @@ class CreateFileIndex {
                 path = file.absoluteFile.toPath(),
                 name = file.name,
                 size = file.length(),
-                hash = file.inputStream().use { DigestUtils.md5Hex(it) },
+                hash = getMd5Hash(file, md5HashRequired),
                 valid = false
             )
         }
 
         results
     }
+
+    private fun getMd5Hash(file: File, md5HashRequired: Boolean) =
+            if (md5HashRequired) {
+                file.inputStream().use { DigestUtils.md5Hex(it) }
+            } else {
+                ""
+            }
 }

@@ -7,8 +7,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
@@ -25,9 +29,30 @@ internal class CreateFileIndexTest {
 
     private lateinit var indexPath: Path
 
+    private val directoryValidationConfig = DirectoryItemValidationConfig(
+        sizeAtLeastAsPrevious = true,
+        filesQtyAtLeastAsInPrevious = false,
+        fileSizeAtLeastAsInPrevious = false
+    )
+
+    private val fileItemValidationConfig = FileItemValidationConfig(
+        sizeAtLeastAsPrevious = true,
+        md5FileCheck = true, zipTest = true, logFileExists = true
+    )
+
+    private lateinit var profile: Profile
+
     @BeforeEach
     fun setUp() {
         indexPath = Files.createTempDirectory("")
+
+        profile = Profile(
+            name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), keepCopies = 3,
+            directoryItemValidationConfig = directoryValidationConfig,
+            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
+        )
 
         useCase = CreateFileIndex()
     }
@@ -47,10 +72,9 @@ internal class CreateFileIndexTest {
         val secondFile = Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(
-            indexPath, StorageUnit.FILE,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
-        )
+        val profile = profile.copy(storageUnit = StorageUnit.FILE)
+
+        val results = useCase.create(profile)
 
         assertTrue(results.isRight())
 
@@ -93,10 +117,7 @@ internal class CreateFileIndexTest {
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(
-            indexPath, StorageUnit.DIRECTORY,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
-        )
+        val results = useCase.create(profile)
 
         assertTrue(results.isRight())
 
@@ -140,10 +161,9 @@ internal class CreateFileIndexTest {
 
     @Test
     fun `Return error if path doesn't exist`() {
-        val result = useCase.create(
-            File("does-not-exist").toPath(), StorageUnit.DIRECTORY,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
-        )
+        val profile = profile.copy(path = File("does-not-exist").toPath().toString())
+
+        val result = useCase.create(profile)
 
         assertTrue(result.isLeft())
 
@@ -157,10 +177,9 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is File)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(
-                directory, StorageUnit.FILE,
-                Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
-        )
+        val profile = profile.copy(path = directory.toString(), storageUnit = StorageUnit.FILE)
+
+        val results = useCase.create(profile)
         assertTrue(results.isRight())
 
         when(results) {
@@ -178,10 +197,16 @@ internal class CreateFileIndexTest {
     fun `Return empty path-file-index for empty root directory (StorageUnit is Directory)`() {
         val directory = Files.createTempDirectory("")
 
-        val results = useCase.create(
-            directory, StorageUnit.DIRECTORY,
-            Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(Defaults.FILENAME_FILTER_PATTERN)
+        val profile = Profile(
+                name = "default", path = directory.toString(),
+                storageUnit = StorageUnit.DIRECTORY,
+                fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+                directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), keepCopies = 3,
+                directoryItemValidationConfig = directoryValidationConfig,
+                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
         )
+
+        val results = useCase.create(profile)
         assertTrue(results.isRight())
 
         when(results) {
@@ -206,9 +231,9 @@ internal class CreateFileIndexTest {
         Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomFileData()) }
         Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomFileData()) }
 
-        val results = useCase.create(
-            indexPath, StorageUnit.FILE, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(fileNameFilter)
-        )
+        val profile = profile.copy(storageUnit = StorageUnit.FILE, fileNameFilter = Regex(fileNameFilter))
+
+        val results = useCase.create(profile)
 
         assertTrue(results.isRight())
 
@@ -230,14 +255,7 @@ internal class CreateFileIndexTest {
     fun `Directory Index - Don't include files excluded by name filter`() {
         val fileNameFilter = ".*\\.zip$"
 
-        createDirectory(indexPath, "2019-07-14") { directory ->
-            val (_, _, _) = getSampleArchiveFileWithCompanions(
-                directory, UUID.randomUUID().toString()
-            )
-
-            Paths.get(directory.toString(), "cowboy.jpg").toFile().apply { writeText(getRandomFileData()) }
-            Paths.get(directory.toString(), "outlaw.bmp").toFile().apply { writeText(getRandomFileData()) }
-        }
+        createDirectoryWithSampleFiles("2019-07-14")
 
         createDirectory(indexPath, "2019-07-15") { directory ->
             getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
@@ -246,9 +264,9 @@ internal class CreateFileIndexTest {
             Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomFileData()) }
         }
 
-        val results = useCase.create(
-            indexPath, StorageUnit.DIRECTORY, Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), Regex(fileNameFilter)
-        )
+        val profile = profile.copy(fileNameFilter = Regex(fileNameFilter))
+
+        val results = useCase.create(profile)
 
         assertTrue(results.isRight())
 
@@ -263,6 +281,62 @@ internal class CreateFileIndexTest {
                 assertEquals(2, secondDirectoryItem.fileItems.size)
             }
             is Either.Left -> throw Exception("assertion error")
+        }
+    }
+
+    @Test
+    fun `Directory item - Hash property should be blank if md5 check disabled for file validation`() {
+        createDirectoryWithSampleFiles("2019-07-14")
+
+        val profile = profile.copy(fileItemValidationConfig = fileItemValidationConfig.copy(md5FileCheck = false))
+
+        val results = useCase.create(profile)
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                assertTrue(results.b.directoryItems.isNotEmpty())
+                results.b.directoryItems.forEach { directoryItem ->
+                    assertTrue(directoryItem.fileItems.isNotEmpty())
+                    assertTrue(directoryItem.fileItems.all { it.hash.isBlank() })
+                }
+            }
+            is Either.Left -> throw Exception("assertion error")
+        }
+    }
+
+    @Test
+    fun `File item - Hash property should be blank if md5 check disabled for file validation`() {
+        Paths.get(indexPath.toString(), "dude.jpg").toFile().apply { writeText(getRandomFileData()) }
+        Paths.get(indexPath.toString(), "hugue.bmp").toFile().apply { writeText(getRandomFileData()) }
+
+        val profile = profile.copy(
+            storageUnit = StorageUnit.FILE,
+            fileItemValidationConfig = fileItemValidationConfig.copy(md5FileCheck = false)
+        )
+
+        val results = useCase.create(profile)
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                assertTrue(results.b.fileItems.isNotEmpty())
+                assertTrue(results.b.fileItems.all { it.hash.isBlank() })
+            }
+            is Either.Left -> throw Exception("assertion error")
+        }
+    }
+
+    private fun createDirectoryWithSampleFiles(directoryName: String) {
+        createDirectory(indexPath, directoryName) { directory ->
+            val (_, _, _) = getSampleArchiveFileWithCompanions(
+                directory, UUID.randomUUID().toString()
+            )
+
+            Paths.get(directory.toString(), "mario.jpg").toFile().apply { writeText(getRandomFileData()) }
+            Paths.get(directory.toString(), "kalvin.bmp").toFile().apply { writeText(getRandomFileData()) }
         }
     }
 }
