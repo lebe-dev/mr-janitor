@@ -50,7 +50,8 @@ config {
             }
         }
 
-	    keep-copies = 7
+        // How many last items to keep
+	    keep-items-quantity = 7
 	}
 
 	profiles = ["mysite", "nginx-logs"]
@@ -63,7 +64,7 @@ config {
         unit = "directory"
 
         // How much copies to keep
-        keep-copies = 7
+        keep-items-quantity = 7
 
         // Override defaults
         item-validation {
@@ -75,9 +76,6 @@ config {
                 file-size-at-least-as-in-previous = false
             }
         }
-
-        // What to do with out-of-date items
-        action = "remove" // Remove from disk
 	}
 
 	mysql-dumps {
@@ -89,7 +87,7 @@ config {
         file-name-filter = ".*.sql" // Filter files by name (Regular expression)
 
         // How much to store
-        keep-copies = 7
+        keep-items-quantity = 7
 
         // Override defaults
         item-validation {
@@ -103,9 +101,6 @@ config {
                 size-at-least-as-previous = false
             }
         }
-
-        // What to do with out-of-date items
-        action = "compress" // Compress
 	}
 
 }
