@@ -9,6 +9,7 @@ import ru.lebe.dev.mrjanitor.presenter.AppPresenter
 import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
+import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_BOLD_SEPARATOR
 import java.util.*
 
 class CommandLineInteractor(
@@ -77,8 +78,9 @@ class CommandLineInteractor(
     }
 
     private fun showProfileBanner(profile: Profile) {
-        presenter.showMessage("=============================")
-        presenter.showMessage("profile '${profile.name}'")
+        presenter.showMessage(LOG_ROW_BOLD_SEPARATOR)
+        presenter.showMessage(" PROFILE '${profile.name}'")
+        presenter.showMessage(LOG_ROW_BOLD_SEPARATOR)
         presenter.showMessage("- path: '${profile.path}'")
         presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
         presenter.showMessage("- keep copies: ${profile.keepItemsQuantity}")

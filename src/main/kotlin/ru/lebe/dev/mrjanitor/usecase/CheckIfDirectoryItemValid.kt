@@ -9,6 +9,7 @@ import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
+import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_SEPARATOR
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -21,8 +22,8 @@ class CheckIfDirectoryItemValid(
                 directoryValidationConfig: DirectoryItemValidationConfig,
                 fileValidationConfig: FileItemValidationConfig): Boolean {
 
-        log.info("--------------")
-        log.info("check if directory-item is valid, path '${directoryItem.path}'")
+        log.info(LOG_ROW_SEPARATOR)
+        log.info(" CHECK PATH '${directoryItem.path}'")
         log.trace(directoryItem.toString())
 
         log.debug("directory validation config:")

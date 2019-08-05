@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
+import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_SEPARATOR
 
 class GetDirectoryItemsForCleanUp(
     private val createFileIndex: CreateFileIndex,
@@ -16,7 +17,9 @@ class GetDirectoryItemsForCleanUp(
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun getItems(profile: Profile): Either<OperationResult, List<DirectoryItem>> {
-        log.info("get directory items for clean up for profile '${profile.name}'")
+        log.info(LOG_ROW_SEPARATOR)
+        log.info(" PROFILE '${profile.name}'")
+        log.info(LOG_ROW_SEPARATOR)
         log.info("- path: '${profile.path}'")
 
         return when(val fileIndex = createFileIndex.create(profile)) {

@@ -5,6 +5,9 @@ import ru.lebe.dev.mrjanitor.domain.StorageUnit
 object Defaults {
     const val PROFILE_NAME = "defaults"
 
+    const val LOG_ROW_BOLD_SEPARATOR = "================================================="
+    const val LOG_ROW_SEPARATOR = "-------------------------------------------------"
+
     const val EXIT_CODE_OK = 0
 
     const val FILENAME_FILTER_PATTERN = ".*"
