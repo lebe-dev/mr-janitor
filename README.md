@@ -5,7 +5,7 @@ Deal with old backup and log files in a smart way.
 
 ## How to use
 
-Create configuration file `janitor-conf`:
+Create configuration file `janitor.conf`:
 
 ```
 cp janitor.conf-distrib janitor.conf 
@@ -87,3 +87,7 @@ item-validation {
     size-at-least-as-previous = true
 }
 ```
+
+## RoadMap
+
+- Detect previous file items by regexp mask
