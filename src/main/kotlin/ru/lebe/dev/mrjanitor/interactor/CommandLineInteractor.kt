@@ -9,7 +9,7 @@ import ru.lebe.dev.mrjanitor.presenter.AppPresenter
 import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
-import java.util.Date
+import java.util.*
 
 class CommandLineInteractor(
     private val getFileItemsForCleanUp: GetFileItemsForCleanUp,
@@ -81,7 +81,7 @@ class CommandLineInteractor(
         presenter.showMessage("profile '${profile.name}'")
         presenter.showMessage("- path: '${profile.path}'")
         presenter.showMessage("- storage-unit: ${profile.storageUnit.toString().toLowerCase()}")
-        presenter.showMessage("- keep copies: ${profile.keepCopies}")
+        presenter.showMessage("- keep copies: ${profile.keepItemsQuantity}")
     }
 
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {

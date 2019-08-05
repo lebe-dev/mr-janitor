@@ -12,7 +12,10 @@ data class Profile(
     val fileNameFilter: Regex,
     val directoryNameFilter: Regex,
 
-    val keepCopies: Int,
+    /**
+     * How many last items to keep
+     */
+    val keepItemsQuantity: Int,
 
     val fileItemValidationConfig: FileItemValidationConfig,
     val directoryItemValidationConfig: DirectoryItemValidationConfig,

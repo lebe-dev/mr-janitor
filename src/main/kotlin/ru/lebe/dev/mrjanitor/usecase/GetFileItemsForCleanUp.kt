@@ -36,7 +36,7 @@ class GetFileItemsForCleanUp(
 
                 val validFilePaths = validatedFileItems.filter { it.valid }
                                                        .sortedBy { it.path.toFile().lastModified() }
-                                                       .takeLast(profile.keepCopies)
+                                                       .takeLast(profile.keepItemsQuantity)
                                                        .map { it.path.toString() }
 
                 val results = validatedFileItems.filterNot { it.path.toString() in validFilePaths }

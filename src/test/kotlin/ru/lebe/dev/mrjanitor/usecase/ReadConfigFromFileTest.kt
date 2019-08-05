@@ -32,7 +32,7 @@ class ReadConfigFromFileTest: StringSpec({
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
                 firstProfile.fileNameFilter.pattern shouldBe ".*\\.ZIP$"
                 firstProfile.directoryNameFilter.pattern shouldBe "\\d{10}-\\d{2}"
-                firstProfile.keepCopies shouldBe 31
+                firstProfile.keepItemsQuantity shouldBe 31
                 firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
                 val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
@@ -59,7 +59,7 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.storageUnit shouldBe StorageUnit.FILE
                 lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
                 lastProfile.directoryNameFilter.pattern shouldBe "\\d{4}"
-                lastProfile.keepCopies shouldBe 14
+                lastProfile.keepItemsQuantity shouldBe 14
                 lastProfile.cleanAction shouldBe CleanAction.COMPRESS
 
                 val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
@@ -97,7 +97,7 @@ class ReadConfigFromFileTest: StringSpec({
             is Either.Right -> {
                 result.b.defaultProfile.name shouldBe Defaults.PROFILE_NAME
                 result.b.defaultProfile.path.isBlank() shouldBe true
-                result.b.defaultProfile.keepCopies shouldBe 7
+                result.b.defaultProfile.keepItemsQuantity shouldBe 7
                 result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
 
                 val directoryItemValidationConfig = result.b.defaultProfile.directoryItemValidationConfig
@@ -137,7 +137,7 @@ class ReadConfigFromFileTest: StringSpec({
             is Either.Right -> {
                 val firstProfile = result.b.profiles.first()
                 firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
-                firstProfile.keepCopies shouldBe 7
+                firstProfile.keepItemsQuantity shouldBe 7
                 firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
                 firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
                 firstProfile.directoryNameFilter.pattern shouldBe "\\d{3}-\\d{6}"

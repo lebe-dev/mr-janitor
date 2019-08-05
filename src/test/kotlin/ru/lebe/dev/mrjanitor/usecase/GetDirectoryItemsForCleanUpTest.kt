@@ -2,9 +2,7 @@ package ru.lebe.dev.mrjanitor.usecase
 
 import arrow.core.Either
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.CleanAction
@@ -21,7 +19,7 @@ import ru.lebe.dev.mrjanitor.util.TestUtils.getDateFromString
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 internal class GetDirectoryItemsForCleanUpTest {
 
@@ -111,7 +109,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             storageUnit = StorageUnit.DIRECTORY,
             fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
             directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-            keepCopies = 2,
+            keepItemsQuantity = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
             cleanAction = CleanAction.JUST_NOTIFY
@@ -191,7 +189,7 @@ internal class GetDirectoryItemsForCleanUpTest {
                 storageUnit = StorageUnit.DIRECTORY,
                 fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
                 directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-                keepCopies = 2,
+                keepItemsQuantity = 2,
                 fileItemValidationConfig = fileItemValidationConfig,
                 directoryItemValidationConfig = directoryItemValidationConfig,
                 cleanAction = CleanAction.JUST_NOTIFY

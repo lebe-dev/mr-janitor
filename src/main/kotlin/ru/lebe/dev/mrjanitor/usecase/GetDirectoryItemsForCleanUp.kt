@@ -43,7 +43,7 @@ class GetDirectoryItemsForCleanUp(
 
                 val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
                                                                  .sortedBy { it.name }
-                                                                 .takeLast(profile.keepCopies)
+                                                                 .takeLast(profile.keepItemsQuantity)
                                                                  .map { it.path.toString() }
 
                 val results = validatedDirectoryItems.filterNot { it.path.toString() in validDirectoryPaths }

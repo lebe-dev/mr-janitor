@@ -5,12 +5,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.AppConfig
-import ru.lebe.dev.mrjanitor.domain.CleanAction
-import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationResult
-import ru.lebe.dev.mrjanitor.domain.Profile
-import ru.lebe.dev.mrjanitor.domain.StorageUnit
+import ru.lebe.dev.mrjanitor.domain.*
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.Defaults.DIRECTORY_NAME_FILTER_PATTERN
@@ -80,7 +75,7 @@ class ReadConfigFromFile {
     private fun getInternalDefaultProfile() = Profile(
         name = PROFILE_NAME,
         path = ".", storageUnit = Defaults.DEFAULT_STORAGE_UNIT,
-        keepCopies = Defaults.DEFAULT_KEEP_COPIES,
+        keepItemsQuantity = Defaults.DEFAULT_KEEP_COPIES,
         fileNameFilter = Regex(FILENAME_FILTER_PATTERN),
         directoryNameFilter = Regex(DIRECTORY_NAME_FILTER_PATTERN),
         fileItemValidationConfig = FileItemValidationConfig(
@@ -135,8 +130,8 @@ class ReadConfigFromFile {
     private fun isProfileValid(profile: Profile): Boolean {
         var result = true
 
-        if (profile.keepCopies < 1) {
-            log.error("invalid keep-copies value '${profile.keepCopies}', should be > 0")
+        if (profile.keepItemsQuantity < 1) {
+            log.error("invalid keep-copies value '${profile.keepItemsQuantity}', should be > 0")
             result = false
         }
 
@@ -165,7 +160,7 @@ class ReadConfigFromFile {
                     fileNameFilter = Regex(
                         config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
                     ),
-                    keepCopies = config.getInt("$profileName.keep-copies", defaultProfile.keepCopies),
+                    keepItemsQuantity = config.getInt("$profileName.keep-items-quantity", defaultProfile.keepItemsQuantity),
                     fileItemValidationConfig = getFileItemValidationConfig(
                         config, "$profileName.$ITEM_VALIDATION_SECTION.file",
                         defaultProfile.fileItemValidationConfig
