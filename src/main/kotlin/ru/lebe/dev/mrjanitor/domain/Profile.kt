@@ -20,6 +20,8 @@ data class Profile(
     val fileItemValidationConfig: FileItemValidationConfig,
     val directoryItemValidationConfig: DirectoryItemValidationConfig,
 
+    val cleanUpPolicy: CleanUpPolicy,
+
     val cleanAction: CleanAction
 )
 

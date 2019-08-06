@@ -52,6 +52,16 @@ config {
 
         // How many last items to keep
 	    keep-items-quantity = 7
+
+	    // Cleanup rules
+        cleanup {
+            // Remove invalid items beyond of keep quantity
+            // Depends on `all-invalid-items` property
+            invalid-items-beyond-of-keep-quantity = true
+
+            // Remove all invalid items
+            all-invalid-items = false
+        }
 	}
 
 	profiles = ["mysite", "nginx-logs"]

@@ -5,7 +5,13 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import ru.lebe.dev.mrjanitor.domain.*
+import ru.lebe.dev.mrjanitor.domain.AppConfig
+import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.Profile
+import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.Defaults.DIRECTORY_NAME_FILTER_PATTERN
@@ -87,6 +93,10 @@ class ReadConfigFromFile {
             sizeAtLeastAsPrevious = true, filesQtyAtLeastAsInPrevious = true,
             fileSizeAtLeastAsInPrevious = true
         ),
+        cleanUpPolicy = CleanUpPolicy(
+            invalidItemsBeyondOfKeepQuantity = true,
+            allInvalidItems = false
+        ),
         cleanAction = CleanAction.JUST_NOTIFY
     )
 
@@ -160,7 +170,9 @@ class ReadConfigFromFile {
                     fileNameFilter = Regex(
                         config.getString("$profileName.file-name-filter", defaultProfile.fileNameFilter.pattern)
                     ),
-                    keepItemsQuantity = config.getInt("$profileName.keep-items-quantity", defaultProfile.keepItemsQuantity),
+                    keepItemsQuantity = config.getInt(
+                        "$profileName.keep-items-quantity", defaultProfile.keepItemsQuantity
+                    ),
                     fileItemValidationConfig = getFileItemValidationConfig(
                         config, "$profileName.$ITEM_VALIDATION_SECTION.file",
                         defaultProfile.fileItemValidationConfig
@@ -168,6 +180,9 @@ class ReadConfigFromFile {
                     directoryItemValidationConfig = getDirectoryItemValidationConfig(
                         config, "$profileName.$ITEM_VALIDATION_SECTION.directory",
                         defaultProfile.directoryItemValidationConfig
+                    ),
+                    cleanUpPolicy = getCleanUpPolicy(
+                        config, "$profileName.cleanup", defaultProfile.cleanUpPolicy
                     ),
                     cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
                 )
@@ -232,6 +247,26 @@ class ReadConfigFromFile {
 
         } else {
             defaultValidationConfig
+        }
+    }
+
+    private fun getCleanUpPolicy(config: Config, sectionPath: String,
+                                 defaultCleanUpPolicy: CleanUpPolicy): CleanUpPolicy {
+
+        return if (config.hasPath(sectionPath)) {
+            CleanUpPolicy(
+                invalidItemsBeyondOfKeepQuantity = getBooleanPropertyValue(
+                    config, "$sectionPath.invalid-items-beyond-of-keep-quantity",
+                    defaultCleanUpPolicy.invalidItemsBeyondOfKeepQuantity
+                ),
+                allInvalidItems = getBooleanPropertyValue(
+                    config, "$sectionPath.all-invalid-items",
+                    defaultCleanUpPolicy.allInvalidItems
+                )
+            )
+
+        } else {
+            defaultCleanUpPolicy
         }
     }
 

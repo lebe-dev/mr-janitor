@@ -7,7 +7,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import ru.lebe.dev.mrjanitor.domain.*
+import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
+import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.Profile
+import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
@@ -17,7 +22,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 internal class CreateFileIndexTest {
 
@@ -48,7 +53,9 @@ internal class CreateFileIndexTest {
             fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
             directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), keepItemsQuantity = 3,
             directoryItemValidationConfig = directoryValidationConfig,
-            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
+            fileItemValidationConfig = fileItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanAction = CleanAction.COMPRESS
         )
 
         useCase = CreateFileIndex()
@@ -195,12 +202,13 @@ internal class CreateFileIndexTest {
         val directory = Files.createTempDirectory("")
 
         val profile = Profile(
-                name = "default", path = directory.toString(),
-                storageUnit = StorageUnit.DIRECTORY,
-                fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-                directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), keepItemsQuantity = 3,
-                directoryItemValidationConfig = directoryValidationConfig,
-                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
+            name = "default", path = directory.toString(),
+            storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN), keepItemsQuantity = 3,
+            directoryItemValidationConfig = directoryValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
         )
 
         val results = useCase.create(profile)

@@ -50,6 +50,9 @@ class ReadConfigFromFileTest: StringSpec({
                 directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
                 directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe false
 
+                firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe false
+                firstProfile.cleanUpPolicy.allInvalidItems shouldBe false
+
                 //
 
                 val lastProfile = result.b.profiles.last()
@@ -74,6 +77,9 @@ class ReadConfigFromFileTest: StringSpec({
                 directoryItemValidationConfig2.filesQtyAtLeastAsInPrevious shouldBe false
                 directoryItemValidationConfig2.sizeAtLeastAsPrevious shouldBe true
                 directoryItemValidationConfig2.fileSizeAtLeastAsInPrevious shouldBe true
+
+                lastProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
+                lastProfile.cleanUpPolicy.allInvalidItems shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -110,6 +116,11 @@ class ReadConfigFromFileTest: StringSpec({
                 fileItemValidationConfig.md5FileCheck shouldBe true
                 fileItemValidationConfig.logFileExists shouldBe true
                 fileItemValidationConfig.zipTest shouldBe true
+
+                val cleanUpPolicy = result.b.defaultProfile.cleanUpPolicy
+
+                cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
+                cleanUpPolicy.allInvalidItems shouldBe false
             }
             is Either.Left -> throw Exception("assert error")
         }
@@ -154,6 +165,9 @@ class ReadConfigFromFileTest: StringSpec({
                 directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
                 directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
                 directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
+
+                firstProfile.cleanUpPolicy.allInvalidItems shouldBe true
+                firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
             }
             is Either.Left -> throw Exception("assert error")
         }

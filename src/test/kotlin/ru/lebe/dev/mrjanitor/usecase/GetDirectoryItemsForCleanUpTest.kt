@@ -2,10 +2,13 @@ package ru.lebe.dev.mrjanitor.usecase
 
 import arrow.core.Either
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.CleanAction
+import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
@@ -19,7 +22,7 @@ import ru.lebe.dev.mrjanitor.util.TestUtils.getDateFromString
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 internal class GetDirectoryItemsForCleanUpTest {
 
@@ -112,6 +115,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             keepItemsQuantity = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
             cleanAction = CleanAction.JUST_NOTIFY
         )
 
@@ -184,15 +188,16 @@ internal class GetDirectoryItemsForCleanUpTest {
         }
 
         val profile = Profile(
-                name = "test",
-                path = indexPath.toString(),
-                storageUnit = StorageUnit.DIRECTORY,
-                fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-                directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-                keepItemsQuantity = 2,
-                fileItemValidationConfig = fileItemValidationConfig,
-                directoryItemValidationConfig = directoryItemValidationConfig,
-                cleanAction = CleanAction.JUST_NOTIFY
+            name = "test",
+            path = indexPath.toString(),
+            storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
+            keepItemsQuantity = 2,
+            fileItemValidationConfig = fileItemValidationConfig,
+            directoryItemValidationConfig = directoryItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanAction = CleanAction.JUST_NOTIFY
         )
 
         val results = useCase.getItems(profile)
