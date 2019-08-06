@@ -228,20 +228,12 @@ internal class GetDirectoryItemsForCleanUpTest {
         createInvalidDirectory("2019-07-14")
         createValidDirectory("2019-07-15", 5)
 
-        val profile = Profile(
-            name = "test",
-            path = indexPath.toString(),
-            storageUnit = StorageUnit.DIRECTORY,
-            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-            keepItemsQuantity = 3,
-            fileItemValidationConfig = fileItemValidationConfig,
-            directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-            cleanAction = CleanAction.JUST_NOTIFY
+        val results = useCase.getItems(
+            profile.copy(
+                keepItemsQuantity = 3,
+                cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
+            )
         )
-
-        val results = useCase.getItems(profile)
 
         assertTrue(results.isRight())
 
