@@ -146,48 +146,26 @@ internal class GetDirectoryItemsForCleanUpTest {
 
     @Test
     fun `Respect directory name filter`() {
-        createDirectory(
-                indexPath, "zimbambwa"
-        ) { directoryPath ->
-            createValidArchiveFiles(directoryPath, 2)
-        }
+        createValidDirectory("zimbambwa", 2)
 
-        createDirectory(
-                indexPath, getDateFolderName(getDateFromString("2019-07-09"))
-        ) { directoryPath ->
-            createFilesWithInvalidHash(directoryPath, 1)
-            createFilesWithAbsentHashFile(directoryPath, 1)
-            createValidArchiveFiles(directoryPath, 2) // GOOD
-        }
+        createInvalidDirectory("2019-07-09")
 
-        createValidDirectory("2019-07-10", 5)
+        createValidDateDirectory("2019-07-10", 5)
 
         // INVALID DATE FORMAT
-        createDirectory(
-                indexPath, "20190711"
-        ) { directoryPath ->
-            createValidArchiveFiles(directoryPath, 2)
-        }
+        createValidDirectory("20190711", 2)
 
-        createValidDirectory("2019-07-13", 6)
+        createValidDateDirectory("2019-07-13", 6)
 
+        // Empty directory
         createDirectory(indexPath, getDateFolderName(getDateFromString("2019-07-14"))) {}
 
-        createValidDirectory("2019-07-15", 7)
+        createValidDateDirectory("2019-07-15", 7)
 
-        createDirectory(
-                indexPath, getDateFolderName(getDateFromString("2019-07-16"))
-        ) { directoryPath ->
-            createFilesWithInvalidHash(directoryPath, 1)
-            createFilesWithAbsentHashFile(directoryPath, 1)
-        }
+        createInvalidDirectory("2019-07-16")
 
         // INVALID DATE FORMAT
-        createDirectory(
-                indexPath, "20190717"
-        ) { directoryPath ->
-            createValidArchiveFiles(directoryPath, 2)
-        }
+        createValidDirectory("20190717", 2)
 
         val results = useCase.getItems(profile)
 
@@ -221,12 +199,12 @@ internal class GetDirectoryItemsForCleanUpTest {
 
     @Test
     fun `Exclude invalid items beyond of keep quantity`() {
-        createValidDirectory("2019-07-10", 1)
+        createValidDateDirectory("2019-07-10", 1)
         createInvalidDirectory("2019-07-11")
-        createValidDirectory("2019-07-12", 3)
-        createValidDirectory("2019-07-13", 4)
+        createValidDateDirectory("2019-07-12", 3)
+        createValidDateDirectory("2019-07-13", 4)
         createInvalidDirectory("2019-07-14")
-        createValidDirectory("2019-07-15", 5)
+        createValidDateDirectory("2019-07-15", 5)
 
         val results = useCase.getItems(
             profile.copy(
@@ -249,7 +227,13 @@ internal class GetDirectoryItemsForCleanUpTest {
         }
     }
 
-    private fun createValidDirectory(directoryDate: String, filesAmount: Int) {
+    private fun createValidDirectory(directoryName: String, filesAmount: Int) {
+        createDirectory(indexPath, directoryName) {
+            createValidArchiveFiles(it, filesAmount)
+        }
+    }
+
+    private fun createValidDateDirectory(directoryDate: String, filesAmount: Int) {
         createDirectory(indexPath, getDateFolderName(getDateFromString(directoryDate))) {
             createValidArchiveFiles(it, filesAmount)
         }
