@@ -189,19 +189,6 @@ internal class GetDirectoryItemsForCleanUpTest {
             createValidArchiveFiles(directoryPath, 2)
         }
 
-        val profile = Profile(
-            name = "test",
-            path = indexPath.toString(),
-            storageUnit = StorageUnit.DIRECTORY,
-            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-            keepItemsQuantity = 2,
-            fileItemValidationConfig = fileItemValidationConfig,
-            directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
-            cleanAction = CleanAction.JUST_NOTIFY
-        )
-
         val results = useCase.getItems(profile)
 
         assertTrue(results.isRight())
