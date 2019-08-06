@@ -7,6 +7,7 @@ import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_SEPARATOR
 
@@ -26,16 +27,7 @@ class GetDirectoryItemsForCleanUp(
             is Either.Right -> {
                 val validatedDirectoryItems = fileIndex.b.directoryItems.map { directoryItem ->
 
-                    val lastFilteredItem = fileIndex.b.directoryItems.takeWhile { item ->
-                        item.path.toString() != directoryItem.path.toString()
-                    }.lastOrNull()
-
-                    val previousDirectoryItem: Option<DirectoryItem> = if (lastFilteredItem != null) {
-                        Some(lastFilteredItem)
-
-                    } else {
-                        None
-                    }
+                    val previousDirectoryItem = getPreviousItem(fileIndex.b, directoryItem)
 
                     directoryItem.copy(valid = checkIfDirectoryItemValid.isValid(
                         directoryItem, previousDirectoryItem,
@@ -54,6 +46,21 @@ class GetDirectoryItemsForCleanUp(
                 Either.right(results)
             }
             is Either.Left -> Either.left(OperationResult.ERROR)
+        }
+    }
+
+    private fun getPreviousItem(pathFileIndex: PathFileIndex,
+                                currentDirectoryItem: DirectoryItem): Option<DirectoryItem> {
+
+        val lastFilteredItem = pathFileIndex.directoryItems.takeWhile { item ->
+            item.path.toString() != currentDirectoryItem.path.toString()
+        }.lastOrNull()
+
+        return if (lastFilteredItem != null) {
+            Some(lastFilteredItem)
+
+        } else {
+            None
         }
     }
 }
