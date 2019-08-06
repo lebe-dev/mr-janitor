@@ -45,9 +45,24 @@ internal class GetDirectoryItemsForCleanUpTest {
         filesQtyAtLeastAsInPrevious = true, fileSizeAtLeastAsInPrevious = true
     )
 
+    private lateinit var profile: Profile
+
     @BeforeEach
     fun setUp() {
         indexPath = Files.createTempDirectory("")
+
+        profile = Profile(
+            name = "test",
+            path = indexPath.toString(),
+            storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
+            keepItemsQuantity = 2,
+            fileItemValidationConfig = fileItemValidationConfig,
+            directoryItemValidationConfig = directoryItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
+            cleanAction = CleanAction.JUST_NOTIFY
+        )
 
         useCase = GetDirectoryItemsForCleanUp(createFileIndex, checkIfDirectoryItemValid)
     }
@@ -105,19 +120,6 @@ internal class GetDirectoryItemsForCleanUpTest {
         ) {
             createValidArchiveFiles(it, 7) // GOOD
         }
-
-        val profile = Profile(
-            name = "test",
-            path = indexPath.toString(),
-            storageUnit = StorageUnit.DIRECTORY,
-            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-            keepItemsQuantity = 2,
-            fileItemValidationConfig = fileItemValidationConfig,
-            directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
-            cleanAction = CleanAction.JUST_NOTIFY
-        )
 
         val results = useCase.getItems(profile)
 
