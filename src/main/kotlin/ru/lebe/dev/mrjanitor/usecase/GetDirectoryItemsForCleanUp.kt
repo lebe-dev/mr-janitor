@@ -41,7 +41,30 @@ class GetDirectoryItemsForCleanUp(
                                                                  .takeLast(profile.keepItemsQuantity)
                                                                  .map { it.path.toString() }
 
-                val results = validatedDirectoryItems.filterNot { it.path.toString() in validDirectoryPaths }
+                val results = when {
+                    profile.cleanUpPolicy.allInvalidItems -> validatedDirectoryItems.filterNot {
+                        it.path.toString() in validDirectoryPaths
+                    }
+                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
+                        var validCounter = 0
+
+                        val excludeItems = validatedDirectoryItems.takeLastWhile {
+                            if (it.valid && (validCounter < profile.keepItemsQuantity)) {
+                                validCounter++
+                                true
+
+                            } else {
+                                validCounter < profile.keepItemsQuantity
+                            }
+
+                        }.map { it.path.toString() }
+
+                        validatedDirectoryItems.filterNot {
+                            it.path.toString() in excludeItems
+                        }
+                    }
+                    else -> listOf()
+                }
 
                 Either.right(results)
             }

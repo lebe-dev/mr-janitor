@@ -115,7 +115,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             keepItemsQuantity = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
             cleanAction = CleanAction.JUST_NOTIFY
         )
 
@@ -196,7 +196,7 @@ internal class GetDirectoryItemsForCleanUpTest {
             keepItemsQuantity = 2,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
             cleanAction = CleanAction.JUST_NOTIFY
         )
 
@@ -230,9 +230,57 @@ internal class GetDirectoryItemsForCleanUpTest {
         }
     }
 
+    @Test
+    fun `Exclude invalid items beyond of keep quantity`() {
+        createValidDirectory("2019-07-10", 1)
+        createInvalidDirectory("2019-07-11")
+        createValidDirectory("2019-07-12", 3)
+        createValidDirectory("2019-07-13", 4)
+        createInvalidDirectory("2019-07-14")
+        createValidDirectory("2019-07-15", 5)
+
+        val profile = Profile(
+            name = "test",
+            path = indexPath.toString(),
+            storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
+            keepItemsQuantity = 3,
+            fileItemValidationConfig = fileItemValidationConfig,
+            directoryItemValidationConfig = directoryItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanAction = CleanAction.JUST_NOTIFY
+        )
+
+        val results = useCase.getItems(profile)
+
+        assertTrue(results.isRight())
+
+        when(results) {
+            is Either.Right -> {
+                val itemsForCleanUp = results.b
+
+                assertEquals(2, itemsForCleanUp.size)
+                assertEquals("2019-07-10", itemsForCleanUp.first().name)
+                assertEquals("2019-07-11", itemsForCleanUp.last().name)
+            }
+            is Either.Left -> throw Exception("assert exception")
+        }
+    }
+
     private fun createValidDirectory(directoryDate: String, filesAmount: Int) {
         createDirectory(indexPath, getDateFolderName(getDateFromString(directoryDate))) {
             createValidArchiveFiles(it, filesAmount)
+        }
+    }
+
+    private fun createInvalidDirectory(directoryDate: String) {
+        createDirectory(
+            indexPath, getDateFolderName(getDateFromString(directoryDate))
+        ) { directoryPath ->
+            createFilesWithInvalidHash(directoryPath, 1)
+            createFilesWithAbsentHashFile(directoryPath, 1)
+            createValidArchiveFiles(directoryPath, 1)
         }
     }
 
