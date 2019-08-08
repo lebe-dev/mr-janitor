@@ -54,7 +54,7 @@ Each directory or file item can be validated.
 
 ### 1. Directory item - Total size at least as in previous item
 
-Current directory item has total file size at least as previous item.
+Current directory item has total size at least as previous directory item.
 
 How to enable:
 
@@ -64,21 +64,19 @@ item-validation {
 }
 ```
 
-### 2. Directory item - File items count at least as in previous item
+### 2. Directory item - File items quantity at least as in previous item
 
-Current directory item contains files amount at least as in previous directory.
+Current directory item contains files quantity at least as in previous directory.
 
 How to enable:
 
 ```
 item-validation {
-    qty-at-least-as-previous-valid = true
+    files-qty-at-least-as-in-previous = true
 }
 ```
 
 ### 3. File item - Size should be at least as for previous file item
-
-
 
 How to enable:
 
