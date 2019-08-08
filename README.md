@@ -1,6 +1,6 @@
 # 🧹 Mr.Janitor
 
-Deal with old backup and log files in a smart way.
+Deal with outdated files in a smart way.
 
 На [русском](README-RU.md).
 
