@@ -61,6 +61,32 @@ someProfile {
 }
 ```
 
+### 2. Profiles
+
+Janitor support profiles.
+
+#### Add new profile
+
+1.Choose unique profile name
+
+2.Put name in `profiles` property
+
+It will look like:
+
+```
+profiles = ["YourShinyNewProfile"]
+```
+
+3.Define profile section as shown below:
+
+```
+YourShinyNewProfile {
+    ...
+}
+```
+
+Get inspiration from `janitor.conf-distrib` file.
+
 ## Smart checks
 
 Janitor supports several checks for data validation.
