@@ -2,6 +2,7 @@
 
 Deal with old backup and log files in a smart way.
 
+На [русском](README-RU.md).
 
 ## How to use
 
