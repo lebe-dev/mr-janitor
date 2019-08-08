@@ -62,7 +62,19 @@ someProfile {
 
 ## Smart checks
 
-Each directory or file item can be validated. Check example configuration with comments in file `janitor.conf-distrib`
+Janitor supports several checks for data validation.
+
+For example: zip archives can be tested for integrity. Objects with md5 companion files can be checked with
+hash comparison.
+
+Property `unit` defines which [type](StorageUnits.md) of storage units should we use.
+
+There are two types:
+
+- `DIRECTORY` - directory with files
+- `FILE` - files
+
+Check more examples with comments in `janitor.conf-distrib`.
 
 ### 1. Directory item - Total size at least as in previous item
 
