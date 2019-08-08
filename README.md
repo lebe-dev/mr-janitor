@@ -48,6 +48,18 @@ items total: 3
 
 ```
 
+## Basic configuration
+
+### 1. How much items to keep
+
+You can define in any profile how much items to keep. How to do it:
+
+```
+someProfile {
+    keep-items-quantity = 7
+}
+```
+
 ## Smart checks
 
 Each directory or file item can be validated.
@@ -60,7 +72,9 @@ How to enable:
 
 ```
 item-validation {
-    size-at-least-as-previous = true
+    directory {
+        size-at-least-as-previous = true
+    }
 }
 ```
 
@@ -72,19 +86,94 @@ How to enable:
 
 ```
 item-validation {
-    files-qty-at-least-as-in-previous = true
+    directory {
+        files-qty-at-least-as-in-previous = true
+    }
 }
 ```
 
-### 3. File item - Size should be at least as for previous file item
+### 3. Directory Item - File item size should >= same file item in previous directory
+
+```
+item-validation {
+    directory {
+        file-size-at-least-as-in-previous = true
+    }
+}
+```
+
+### 4. File item - Size should be at least as for previous file item
 
 How to enable:
 
 ```
 item-validation {
-    size-at-least-as-previous = true
+    file {
+        size-at-least-as-previous = true
+    }
 }
 ```
+
+### 5. File item - MD5 file hash check
+
+Janitor looking for .md5 file companion and compare hashes
+
+How to enable:
+
+```
+item-validation {
+    file {
+        md5-file-check = true
+    }
+}
+```
+
+### 6. File item - Zip test
+
+Check zip archive integrity
+
+How to enable:
+
+```
+item-validation {
+    file {
+        zip-test = true
+    }
+}
+```
+
+### 7. File item - Log file exists
+
+Janitor looking for .log companion file.
+
+How to enable:
+
+```
+item-validation {
+    file {
+        log-file-exists = true
+    }
+}
+```
+
+### 8. File item - Custom validator command
+
+You can specify custom validator shell command
+
+How to enable:
+
+```
+item-validation {
+    file {
+        use-custom-validator = true
+        custom-validator-command = "gzip -t ${fileName}"
+    }
+}
+```
+
+Notes:
+
+`${fileName}` will be replaced with file item name
 
 ## RoadMap
 
