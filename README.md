@@ -1,4 +1,4 @@
-# Mr.Janitor
+# 🧹 Mr.Janitor
 
 Deal with old backup and log files in a smart way.
 
