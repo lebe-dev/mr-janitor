@@ -25,16 +25,7 @@ class GetDirectoryItemsForCleanUp(
 
         return when(val fileIndex = createFileIndex.create(profile)) {
             is Either.Right -> {
-                val validatedDirectoryItems = fileIndex.b.directoryItems.map { directoryItem ->
-
-                    val previousDirectoryItem = getPreviousItem(fileIndex.b, directoryItem)
-
-                    directoryItem.copy(valid = checkIfDirectoryItemValid.isValid(
-                        directoryItem, previousDirectoryItem,
-                        profile.directoryItemValidationConfig, profile.fileItemValidationConfig)
-                    )
-
-                }
+                val validatedDirectoryItems = getValidatedDirectoryItems(profile, fileIndex.b)
 
                 val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
                                                                  .sortedBy { it.name }
@@ -71,6 +62,16 @@ class GetDirectoryItemsForCleanUp(
             is Either.Left -> Either.left(OperationResult.ERROR)
         }
     }
+
+    private fun getValidatedDirectoryItems(profile: Profile, pathFileIndex: PathFileIndex): List<DirectoryItem> =
+        pathFileIndex.directoryItems.map { directoryItem ->
+            val previousDirectoryItem = getPreviousItem(pathFileIndex, directoryItem)
+
+            directoryItem.copy(valid = checkIfDirectoryItemValid.isValid(
+                directoryItem, previousDirectoryItem,
+                profile.directoryItemValidationConfig, profile.fileItemValidationConfig)
+            )
+        }
 
     private fun getPreviousItem(pathFileIndex: PathFileIndex,
                                 currentDirectoryItem: DirectoryItem): Option<DirectoryItem> {
