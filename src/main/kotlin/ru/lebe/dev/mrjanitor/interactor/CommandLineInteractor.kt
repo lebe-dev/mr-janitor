@@ -10,7 +10,7 @@ import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
 import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_BOLD_SEPARATOR
-import java.util.*
+import java.util.Date
 
 class CommandLineInteractor(
     private val getFileItemsForCleanUp: GetFileItemsForCleanUp,
@@ -28,19 +28,15 @@ class CommandLineInteractor(
                 StorageUnit.DIRECTORY -> {
                     when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
                         is Either.Right -> cleanUpStorageItems.cleanUp(directoryItems.b)
-                        is Either.Left -> {
-                            presenter.showError("unable to get directory items " +
-                                                "for cleanup, profile '${profile.name}'")
-                        }
+                        is Either.Left -> presenter.showError("unable to get directory items " +
+                                                              "for cleanup, profile '${profile.name}'")
                     }
                 }
                 StorageUnit.FILE -> {
                     when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
                         is Either.Right -> cleanUpStorageItems.cleanUp(fileItems.b)
-                        is Either.Left -> {
-                            presenter.showError("unable to get file items " +
-                                                "for cleanup, profile '${profile.name}'")
-                        }
+                        is Either.Left -> presenter.showError("unable to get file items " +
+                                                              "for cleanup, profile '${profile.name}'")
                     }
                 }
             }
@@ -56,20 +52,16 @@ class CommandLineInteractor(
                 StorageUnit.DIRECTORY -> {
                     when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
                         is Either.Right -> showDirectoryItemsForCleanUp(directoryItems.b)
-                        is Either.Left -> {
-                            presenter.showError("unable to get directory items " +
-                                    "for cleanup, profile '${profile.name}'")
-                        }
+                        is Either.Left -> presenter.showError("unable to get directory items " +
+                                                              "for cleanup, profile '${profile.name}'")
                     }
                 }
                 StorageUnit.FILE -> {
 
                     when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
                         is Either.Right -> showFileItemsForCleanUp(fileItems.b)
-                        is Either.Left -> {
-                            presenter.showError("unable to get file items " +
-                                    "for cleanup, profile '${profile.name}'")
-                        }
+                        is Either.Left -> presenter.showError("unable to get file items " +
+                                                              "for cleanup, profile '${profile.name}'")
                     }
 
                 }
