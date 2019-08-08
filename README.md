@@ -62,7 +62,7 @@ someProfile {
 
 ## Smart checks
 
-Each directory or file item can be validated.
+Each directory or file item can be validated. Check example configuration with comments in file `janitor.conf-distrib`
 
 ### 1. Directory item - Total size at least as in previous item
 
@@ -174,6 +174,38 @@ item-validation {
 Notes:
 
 `${fileName}` will be replaced with file item name
+
+## Clean up policy
+
+You can specify clean up policy per profile.
+
+### Remove all invalid items
+
+If you want to remove all invalid items you should enable property `all-invalid-items` in cleanup section:
+
+```
+someProfile {
+    cleanup {      
+        all-invalid-items = true
+    }
+}
+```
+
+### Do not remove invalid items in keep range
+
+Sometimes invalid items may be incomplete but valuable. If you want to keep them with valid items you should
+enable special property:
+
+```
+someProfile {
+    cleanup {
+        invalid-items-beyond-of-keep-quantity = true
+        all-invalid-items = false
+    }
+}
+```
+
+This property depends on `all-invalid-items`.
 
 ## RoadMap
 
