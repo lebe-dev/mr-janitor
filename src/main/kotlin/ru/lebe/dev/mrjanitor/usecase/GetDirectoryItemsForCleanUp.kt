@@ -33,9 +33,9 @@ class GetDirectoryItemsForCleanUp(
                                                                  .map { it.path.toString() }
 
                 val results = when {
-                    profile.cleanUpPolicy.allInvalidItems -> validatedDirectoryItems.filterNot {
-                        it.path.toString() in validDirectoryPaths
-                    }
+                    profile.cleanUpPolicy.allInvalidItems ->
+                                                        getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
+
                     profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
                         var validCounter = 0
 
@@ -72,6 +72,10 @@ class GetDirectoryItemsForCleanUp(
                 profile.directoryItemValidationConfig, profile.fileItemValidationConfig)
             )
         }
+
+    private fun getInvalidItems(directoryItems: List<DirectoryItem>,
+                                validDirectoryPaths: List<String>): List<DirectoryItem> =
+                                            directoryItems.filterNot { it.path.toString() in validDirectoryPaths }
 
     private fun getPreviousItem(pathFileIndex: PathFileIndex,
                                 currentDirectoryItem: DirectoryItem): Option<DirectoryItem> {
