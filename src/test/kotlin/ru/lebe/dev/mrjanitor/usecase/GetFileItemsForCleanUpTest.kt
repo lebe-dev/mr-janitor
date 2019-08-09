@@ -148,6 +148,23 @@ internal class GetFileItemsForCleanUpTest {
         }
     }
 
+    @Test
+    fun `Include all invalid items if all-invalid-items cleanup policy is true`() {
+        createValidArchiveFiles(indexPath, 3)
+        createInvalidArchiveFiles(indexPath, 2)
+        createValidArchiveFiles(indexPath, 2)
+        createInvalidArchiveFiles(indexPath, 1)
+
+        //
+
+        val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = true)
+        val profile = profile.copy(keepItemsQuantity = 2, cleanUpPolicy = cleanUpPolicy)
+
+        assertRightResult(useCase.getFileItems(profile)) { results ->
+            assertEquals(6, results.size)
+        }
+    }
+
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
         val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
 
