@@ -249,3 +249,5 @@ This property depends on `all-invalid-items`.
 ## RoadMap
 
 - Detect previous file items by regexp mask
+
+- Support special clean up policies for scheme grandfather-father-son
