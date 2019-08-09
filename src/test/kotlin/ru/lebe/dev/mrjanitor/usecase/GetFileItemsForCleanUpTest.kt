@@ -13,7 +13,7 @@ import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
@@ -178,7 +178,7 @@ internal class GetFileItemsForCleanUpTest {
 
         val profile = profile.copy(keepItemsQuantity = 0)
 
-        assertErrorResult(useCase.getFileItems(profile), OperationResult.MISCONFIGURATION)
+        assertErrorResult(useCase.getFileItems(profile), OperationError.MISCONFIGURATION)
     }
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {

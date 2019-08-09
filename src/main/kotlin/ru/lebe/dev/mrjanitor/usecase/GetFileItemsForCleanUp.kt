@@ -6,7 +6,7 @@ import arrow.core.Option
 import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 
@@ -16,7 +16,7 @@ class GetFileItemsForCleanUp(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun getFileItems(profile: Profile): Either<OperationResult, List<FileItem>> {
+    fun getFileItems(profile: Profile): Either<OperationError, List<FileItem>> {
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
@@ -41,12 +41,12 @@ class GetFileItemsForCleanUp(
 
                     Either.right(results)
                 }
-                is Either.Left -> Either.left(OperationResult.ERROR)
+                is Either.Left -> Either.left(OperationError.ERROR)
             }
 
         } else {
             log.error("misconfiguration - keep-items-quantity equals zero")
-            Either.left(OperationResult.MISCONFIGURATION)
+            Either.left(OperationError.MISCONFIGURATION)
         }
     }
 

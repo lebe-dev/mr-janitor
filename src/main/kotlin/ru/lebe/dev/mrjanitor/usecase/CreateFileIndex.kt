@@ -8,7 +8,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
@@ -20,7 +20,7 @@ import java.nio.file.Paths
 class CreateFileIndex {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun create(profile: Profile): Either<OperationResult, PathFileIndex> {
+    fun create(profile: Profile): Either<OperationError, PathFileIndex> {
         log.info("create file index for path '${profile.path}'")
         log.info("- storage-unit: ${profile.storageUnit}")
 
@@ -39,12 +39,12 @@ class CreateFileIndex {
             }
         } else {
             log.error("path doesn't exist")
-            Either.left(OperationResult.ERROR)
+            Either.left(OperationError.ERROR)
         }
     }
 
     private fun createIndexForDirectories(path: Path, directoryNameFilter: Regex,
-                              fileNameFilter: Regex, md5HashRequired: Boolean): Either<OperationResult, PathFileIndex> =
+                              fileNameFilter: Regex, md5HashRequired: Boolean): Either<OperationError, PathFileIndex> =
 
         when(val directoryItems = getDirectoryItemsFromPath(
                 path, directoryNameFilter, fileNameFilter, md5HashRequired)
@@ -65,12 +65,12 @@ class CreateFileIndex {
             is Failure -> {
                 log.error("unable to create file index")
                 log.error(directoryItems.exception.message, directoryItems.exception.cause)
-                Either.left(OperationResult.ERROR)
+                Either.left(OperationError.ERROR)
             }
         }
 
     private fun createIndexForFiles(path: Path, fileNameFilter: Regex,
-                                    md5HashRequired: Boolean): Either<OperationResult, PathFileIndex> =
+                                    md5HashRequired: Boolean): Either<OperationError, PathFileIndex> =
         when(val fileItems = getFileItemsFromPath(path, fileNameFilter, md5HashRequired)) {
             is Try.Success -> {
                 Either.right(
@@ -87,7 +87,7 @@ class CreateFileIndex {
                     "unable to get file items from path: ${fileItems.exception.message}",
                     fileItems.exception.cause
                 )
-                Either.left(OperationResult.ERROR)
+                Either.left(OperationError.ERROR)
             }
         }
 

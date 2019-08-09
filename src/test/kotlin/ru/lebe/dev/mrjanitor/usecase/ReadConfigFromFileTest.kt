@@ -4,7 +4,7 @@ import arrow.core.Either
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 import ru.lebe.dev.mrjanitor.domain.CleanAction
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.util.Defaults
 import java.io.File
@@ -86,7 +86,7 @@ class ReadConfigFromFileTest: StringSpec({
     }
 
     "Return failure if config file doesn't exist" {
-        useCase.read(File("unknown-file")) shouldBe Either.left(OperationResult.ERROR)
+        useCase.read(File("unknown-file")) shouldBe Either.left(OperationError.ERROR)
     }
 
     "Return failure if at least one profile is absent" {

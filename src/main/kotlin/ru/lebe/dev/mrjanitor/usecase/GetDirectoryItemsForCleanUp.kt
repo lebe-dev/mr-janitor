@@ -6,7 +6,7 @@ import arrow.core.Option
 import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_SEPARATOR
@@ -17,7 +17,7 @@ class GetDirectoryItemsForCleanUp(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun getItems(profile: Profile): Either<OperationResult, List<DirectoryItem>> {
+    fun getItems(profile: Profile): Either<OperationError, List<DirectoryItem>> {
         log.info(LOG_ROW_SEPARATOR)
         log.info(" PROFILE '${profile.name}'")
         log.info(LOG_ROW_SEPARATOR)
@@ -59,7 +59,7 @@ class GetDirectoryItemsForCleanUp(
 
                 Either.right(results)
             }
-            is Either.Left -> Either.left(OperationResult.ERROR)
+            is Either.Left -> Either.left(OperationError.ERROR)
         }
     }
 

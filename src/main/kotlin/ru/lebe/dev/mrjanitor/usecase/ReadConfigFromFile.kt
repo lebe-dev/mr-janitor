@@ -9,7 +9,7 @@ import ru.lebe.dev.mrjanitor.domain.AppConfig
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
@@ -31,7 +31,7 @@ class ReadConfigFromFile {
         private const val ITEM_VALIDATION_SECTION = "item-validation"
     }
 
-    fun read(file: File): Either<OperationResult, AppConfig> {
+    fun read(file: File): Either<OperationError, AppConfig> {
         log.info("read configuration from file '${file.absolutePath}'")
 
         return if (file.exists()) {
@@ -43,12 +43,12 @@ class ReadConfigFromFile {
 
             } catch (e: ConfigException.Missing) {
                 log.error("missing property: ${e.message}", e)
-                Either.left(OperationResult.ERROR)
+                Either.left(OperationError.ERROR)
             }
 
         } else {
             log.error("config file wasn't found")
-            Either.left(OperationResult.ERROR)
+            Either.left(OperationError.ERROR)
         }
     }
 
@@ -67,13 +67,13 @@ class ReadConfigFromFile {
                     }
                     is Either.Left -> {
                         log.error("unable to load profiles")
-                        Either.left(OperationResult.ERROR)
+                        Either.left(OperationError.ERROR)
                     }
                 }
             }
             is Either.Left -> {
                 log.error("unable to load default profile")
-                Either.left(OperationResult.ERROR)
+                Either.left(OperationError.ERROR)
             }
 
         }
@@ -100,7 +100,7 @@ class ReadConfigFromFile {
         cleanAction = CleanAction.JUST_NOTIFY
     )
 
-    private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationResult, List<Profile>> =
+    private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationError, List<Profile>> =
         if (config.hasPath(PROFILES_SECTION)) {
 
             val profiles = arrayListOf<Profile>()
@@ -129,12 +129,12 @@ class ReadConfigFromFile {
                 Either.right(profiles)
 
             } else {
-                Either.left(OperationResult.ERROR)
+                Either.left(OperationError.ERROR)
             }
 
         } else {
             log.error("'$PROFILES_SECTION' property wasn't found")
-            Either.left(OperationResult.ERROR)
+            Either.left(OperationError.ERROR)
         }
 
     private fun isProfileValid(profile: Profile): Boolean {
@@ -154,7 +154,7 @@ class ReadConfigFromFile {
     }
 
     private fun loadProfile(config: Config, profileName: String,
-                            defaultProfile: Profile): Either<OperationResult, Profile> =
+                            defaultProfile: Profile): Either<OperationError, Profile> =
 
         if (config.hasPath(profileName)) {
             Either.right(
@@ -190,7 +190,7 @@ class ReadConfigFromFile {
 
         } else {
             log.error("profile '$profileName' wasn't found at path '$profileName'")
-            Either.left(OperationResult.ERROR)
+            Either.left(OperationError.ERROR)
         }
 
     private fun getDirectoryItemValidationConfig(config: Config, sectionPath: String,

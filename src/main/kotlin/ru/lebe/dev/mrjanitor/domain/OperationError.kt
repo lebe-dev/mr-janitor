@@ -1,6 +1,6 @@
 package ru.lebe.dev.mrjanitor.domain
 
-enum class OperationResult {
+enum class OperationError {
     ERROR,
 
     /**

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
@@ -172,7 +172,7 @@ internal class CreateFileIndexTest {
         assertTrue(result.isLeft())
 
         when(result) {
-            is Either.Left -> assertEquals(OperationResult.ERROR, result.a)
+            is Either.Left -> assertEquals(OperationError.ERROR, result.a)
             is Either.Right -> throw Exception("assert error")
         }
     }
