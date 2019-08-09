@@ -34,6 +34,8 @@ internal class GetFileItemsForCleanUpTest {
 
     private lateinit var useCase: GetFileItemsForCleanUp
 
+    private lateinit var profile: Profile
+
     private val fileItemValidationConfig = FileItemValidationConfig(
         sizeAtLeastAsPrevious = true,
         md5FileCheck = true, zipTest = true, logFileExists = true,
@@ -48,6 +50,19 @@ internal class GetFileItemsForCleanUpTest {
     @BeforeEach
     fun setUp() {
         indexPath = Files.createTempDirectory("")
+
+        profile = Profile(
+            name = "test",
+            path = indexPath.toString(),
+            storageUnit = StorageUnit.FILE,
+            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
+            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
+            keepItemsQuantity = 5,
+            fileItemValidationConfig = fileItemValidationConfig,
+            directoryItemValidationConfig = directoryItemValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanAction = CleanAction.JUST_NOTIFY
+        )
 
         useCase = GetFileItemsForCleanUp(createFileIndex, checkIfFileItemValid)
     }
@@ -79,19 +94,6 @@ internal class GetFileItemsForCleanUpTest {
         createFilesWithInvalidHash(indexPath, 2)
 
         createValidArchiveFiles(indexPath, 2) // GOOD
-
-        val profile = Profile(
-            name = "test",
-            path = indexPath.toString(),
-            storageUnit = StorageUnit.FILE,
-            fileNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN),
-            directoryNameFilter = Regex(Defaults.DIRECTORY_NAME_FILTER_PATTERN),
-            keepItemsQuantity = 5,
-            fileItemValidationConfig = fileItemValidationConfig,
-            directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-            cleanAction = CleanAction.JUST_NOTIFY
-        )
 
         val results = useCase.getFileItems(profile)
 
@@ -126,6 +128,16 @@ internal class GetFileItemsForCleanUpTest {
             }
             is Either.Left -> throw Exception("assert exception")
         }
+    }
+
+    @Test
+    fun `Exclude invalid items in keep range if appropriate cleanup policy activated`() {
+        val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
+        val profile = profile.copy(cleanUpPolicy = cleanUpPolicy)
+
+        val results = useCase.getFileItems(profile)
+
+
     }
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {

@@ -18,7 +18,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
-import ru.lebe.dev.mrjanitor.util.TestUtils.getDateFromString
+import ru.lebe.dev.mrjanitor.util.getDateFromString
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat

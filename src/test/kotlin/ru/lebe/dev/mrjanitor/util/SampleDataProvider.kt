@@ -2,7 +2,6 @@ package ru.lebe.dev.mrjanitor.util
 
 import org.apache.commons.codec.digest.DigestUtils
 import ru.lebe.dev.mrjanitor.domain.FileItem
-import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths

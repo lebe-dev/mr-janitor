@@ -14,7 +14,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createLogCompanionFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createMd5CompanionFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getFileItem
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
-import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
+import ru.lebe.dev.mrjanitor.util.getRandomFileData
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path

@@ -17,7 +17,7 @@ import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
-import ru.lebe.dev.mrjanitor.util.TestUtils.getRandomFileData
+import ru.lebe.dev.mrjanitor.util.getRandomFileData
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
