@@ -30,8 +30,7 @@ class GetFileItemsForCleanUp(
                                                        .map { it.path.toString() }
 
                 val results = when {
-                    profile.cleanUpPolicy.allInvalidItems ->
-                                                validatedFileItems.filterNot { it.path.toString() in validFilePaths }
+                    profile.cleanUpPolicy.allInvalidItems -> getAllInvalidItems(validatedFileItems, validFilePaths)
 
                     profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
                                           getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
@@ -55,6 +54,9 @@ class GetFileItemsForCleanUp(
                 )
             )
         }
+
+    private fun getAllInvalidItems(fileItems: List<FileItem>, validFilePaths: List<String>): List<FileItem> =
+                                                        fileItems.filterNot { it.path.toString() in validFilePaths }
 
     private fun getInvalidItemsBeyondKeepRange(fileItems: List<FileItem>, keepItemsQuantity: Int): List<FileItem> {
         var lastValidItemsFound = 0
