@@ -34,15 +34,15 @@ class GetFileItemsForCleanUp(
                                                 validatedFileItems.filterNot { it.path.toString() in validFilePaths }
 
                     profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
-                        var validCounter = 0
+                        var lastValidItemsFound = 0
 
                         val excludeItems = validatedFileItems.takeLastWhile {
-                            if (it.valid && (validCounter < profile.keepItemsQuantity)) {
-                                validCounter++
+                            if (isValidItemInKeepRange(it, profile.keepItemsQuantity, lastValidItemsFound)) {
+                                lastValidItemsFound++
                                 true
 
                             } else {
-                                validCounter < profile.keepItemsQuantity
+                                lastValidItemsFound < profile.keepItemsQuantity
                             }
 
                         }.map { it.path.toString() }
@@ -65,14 +65,15 @@ class GetFileItemsForCleanUp(
 
             fileItem.copy(
                 valid = checkIfFileItemValid.isValid(
-                    fileItem,
-                    getPreviousFileItem(
-                        pathFileIndex.fileItems, fileItem.path.toString()
-                    ),
-                    profile.fileItemValidationConfig
+                    fileItem = fileItem,
+                    previousFileItem = getPreviousFileItem(pathFileIndex.fileItems, fileItem.path.toString()),
+                    validationConfig = profile.fileItemValidationConfig
                 )
             )
         }
+
+    private fun isValidItemInKeepRange(fileItem: FileItem, keepItemsQuantity: Int, currentItemQuantity: Int): Boolean =
+        fileItem.valid && (currentItemQuantity < keepItemsQuantity)
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
         val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }

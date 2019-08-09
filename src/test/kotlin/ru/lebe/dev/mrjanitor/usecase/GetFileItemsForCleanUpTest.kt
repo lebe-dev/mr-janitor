@@ -61,7 +61,7 @@ internal class GetFileItemsForCleanUpTest {
             keepItemsQuantity = 5,
             fileItemValidationConfig = fileItemValidationConfig,
             directoryItemValidationConfig = directoryItemValidationConfig,
-            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = false, allInvalidItems = true),
             cleanAction = CleanAction.JUST_NOTIFY
         )
 
