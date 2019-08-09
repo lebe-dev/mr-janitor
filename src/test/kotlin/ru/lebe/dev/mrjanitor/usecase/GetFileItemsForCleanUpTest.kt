@@ -98,7 +98,7 @@ internal class GetFileItemsForCleanUpTest {
 
         createValidArchiveFiles(indexPath, 2) // GOOD
 
-        val results = useCase.getFileItems(profile)
+        val results = useCase.getItems(profile)
 
         assertTrue(results.isRight())
 
@@ -145,7 +145,7 @@ internal class GetFileItemsForCleanUpTest {
         val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
         val profile = profile.copy(keepItemsQuantity = 2, cleanUpPolicy = cleanUpPolicy)
 
-        assertRightResult(useCase.getFileItems(profile)) { results ->
+        assertRightResult(useCase.getItems(profile)) { results ->
             assertEquals(5, results.size)
         }
     }
@@ -162,7 +162,7 @@ internal class GetFileItemsForCleanUpTest {
         val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = true)
         val profile = profile.copy(keepItemsQuantity = 2, cleanUpPolicy = cleanUpPolicy)
 
-        assertRightResult(useCase.getFileItems(profile)) { results ->
+        assertRightResult(useCase.getItems(profile)) { results ->
             assertEquals(6, results.size)
         }
     }
@@ -178,7 +178,7 @@ internal class GetFileItemsForCleanUpTest {
 
         val profile = profile.copy(keepItemsQuantity = 0)
 
-        assertErrorResult(useCase.getFileItems(profile), OperationError.MISCONFIGURATION)
+        assertErrorResult(useCase.getItems(profile), OperationError.MISCONFIGURATION)
     }
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {

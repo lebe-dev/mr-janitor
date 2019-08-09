@@ -58,7 +58,7 @@ class CommandLineInteractor(
     }
 
     private fun getFileItemsForCleanUp(profile: Profile, body: (List<FileItem>) -> Unit) {
-        when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
+        when(val fileItems = getFileItemsForCleanUp.getItems(profile)) {
             is Either.Right -> body(fileItems.b)
             is Either.Left -> presenter.showError("unable to get file items " +
                                                   "for cleanup, profile '${profile.name}'")

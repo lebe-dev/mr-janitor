@@ -16,7 +16,7 @@ class GetFileItemsForCleanUp(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun getFileItems(profile: Profile): Either<OperationError, List<FileItem>> {
+    fun getItems(profile: Profile): Either<OperationError, List<FileItem>> {
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
