@@ -23,27 +23,26 @@ class App {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val readConfigFromFile = ReadConfigFromFile()
-
             val createFileIndex = CreateFileIndex()
 
             val checkIfFileItemValid = CheckIfFileItemValid()
 
-            val getFileItemsForCleanUp = GetFileItemsForCleanUp(createFileIndex, checkIfFileItemValid)
-
-            val checkIfDirectoryItemValid = CheckIfDirectoryItemValid(checkIfFileItemValid)
-            val getDirectoryItemsForCleanUp = GetDirectoryItemsForCleanUp(createFileIndex, checkIfDirectoryItemValid)
+            val getDirectoryItemsForCleanUp = GetDirectoryItemsForCleanUp(
+                createFileIndex, CheckIfDirectoryItemValid(checkIfFileItemValid)
+            )
 
             val presenter: AppPresenter = CommandLinePresenter()
 
             val cleanUpStorageItems = CleanUpStorageItems()
 
             val interactor = getInteractor(
-                getFileItemsForCleanUp = getFileItemsForCleanUp,
+                getFileItemsForCleanUp = GetFileItemsForCleanUp(createFileIndex, checkIfFileItemValid),
                 getDirectoryItemsForCleanUp = getDirectoryItemsForCleanUp,
                 cleanUpStorageItems = cleanUpStorageItems,
                 presenter = presenter
             )
+
+            val readConfigFromFile = ReadConfigFromFile()
 
             DefaultCommand().subcommands(
                 CleanUpCommand(readConfigFromFile, interactor, presenter),
@@ -76,9 +75,7 @@ class App {
             override fun run() {
 
                 when(val configFile = readConfigFromFile.read(File(CONFIG_FILE))) {
-                    is Either.Right -> {
-                        interactor.cleanup(configFile.b.profiles)
-                    }
+                    is Either.Right -> interactor.cleanup(configFile.b.profiles)
                     is Either.Left -> presenter.showConfigurationLoadError(CONFIG_FILE)
                 }
             }
@@ -94,18 +91,14 @@ class App {
             override fun run() {
 
                 when(val configFile = readConfigFromFile.read(File(CONFIG_FILE))) {
-                    is Either.Right -> {
-                        interactor.executeDryRun(configFile.b.profiles)
-                    }
+                    is Either.Right -> interactor.executeDryRun(configFile.b.profiles)
                     is Either.Left -> presenter.showConfigurationLoadError(CONFIG_FILE)
                 }
             }
         }
 
         private class ShowVersionCommand: CliktCommand(name = "version", help = "show version") {
-            override fun run() {
-                println(VERSION)
-            }
+            override fun run() { println(VERSION) }
         }
     }
 
