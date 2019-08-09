@@ -29,7 +29,30 @@ class GetFileItemsForCleanUp(
                                                        .takeLast(profile.keepItemsQuantity)
                                                        .map { it.path.toString() }
 
-                val results = validatedFileItems.filterNot { it.path.toString() in validFilePaths }
+                val results = when {
+                    profile.cleanUpPolicy.allInvalidItems ->
+                                                validatedFileItems.filterNot { it.path.toString() in validFilePaths }
+
+                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
+                        var validCounter = 0
+
+                        val excludeItems = validatedFileItems.takeLastWhile {
+                            if (it.valid && (validCounter < profile.keepItemsQuantity)) {
+                                validCounter++
+                                true
+
+                            } else {
+                                validCounter < profile.keepItemsQuantity
+                            }
+
+                        }.map { it.path.toString() }
+
+                        validatedFileItems.filterNot {
+                            it.path.toString() in excludeItems
+                        }
+                    }
+                    else -> listOf()
+                }
 
                 Either.right(results)
             }

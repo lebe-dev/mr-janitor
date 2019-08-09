@@ -22,6 +22,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentLogFil
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createInvalidArchiveFiles
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
+import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -127,6 +128,23 @@ internal class GetFileItemsForCleanUpTest {
                 )
             }
             is Either.Left -> throw Exception("assert exception")
+        }
+    }
+
+    @Test
+    fun `Include invalid items into keep range if appropriate cleanup policy activated`() {
+        createValidArchiveFiles(indexPath, 3)
+        createInvalidArchiveFiles(indexPath, 2)
+        createValidArchiveFiles(indexPath, 2)
+        createInvalidArchiveFiles(indexPath, 1)
+
+        //
+
+        val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
+        val profile = profile.copy(keepItemsQuantity = 2, cleanUpPolicy = cleanUpPolicy)
+
+        assertRightResult(useCase.getFileItems(profile)) { results ->
+            assertEquals(5, results.size)
         }
     }
 
