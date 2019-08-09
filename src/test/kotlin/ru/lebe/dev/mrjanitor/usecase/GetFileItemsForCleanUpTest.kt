@@ -130,25 +130,13 @@ internal class GetFileItemsForCleanUpTest {
         }
     }
 
-    @Test
-    fun `Exclude invalid items in keep range if appropriate cleanup policy activated`() {
-        val cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
-        val profile = profile.copy(cleanUpPolicy = cleanUpPolicy)
-
-        val results = useCase.getFileItems(profile)
-
-
-    }
-
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
         val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
 
         return if (itemsBeforeCurrent.isNotEmpty()) {
             Some(itemsBeforeCurrent.last())
 
-        } else {
-            None
-        }
+        } else { None }
     }
 
 }

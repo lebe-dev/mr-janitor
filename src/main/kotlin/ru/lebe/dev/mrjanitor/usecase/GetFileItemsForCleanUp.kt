@@ -7,6 +7,7 @@ import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.OperationResult
+import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 
 class GetFileItemsForCleanUp(
@@ -21,18 +22,7 @@ class GetFileItemsForCleanUp(
 
         return when(val fileIndex = createFileIndex.create(profile)) {
             is Either.Right -> {
-                val validatedFileItems = fileIndex.b.fileItems.map { fileItem ->
-
-                    fileItem.copy(
-                        valid = checkIfFileItemValid.isValid(
-                            fileItem,
-                            getPreviousFileItem(
-                                fileIndex.b.fileItems, fileItem.path.toString()
-                            ),
-                            profile.fileItemValidationConfig
-                        )
-                    )
-                }
+                val validatedFileItems = getValidatedItems(profile, fileIndex.b)
 
                 val validFilePaths = validatedFileItems.filter { it.valid }
                                                        .sortedBy { it.path.toFile().lastModified() }
@@ -46,6 +36,20 @@ class GetFileItemsForCleanUp(
             is Either.Left -> Either.left(OperationResult.ERROR)
         }
     }
+
+    private fun getValidatedItems(profile: Profile, pathFileIndex: PathFileIndex): List<FileItem> =
+        pathFileIndex.fileItems.map { fileItem ->
+
+            fileItem.copy(
+                valid = checkIfFileItemValid.isValid(
+                    fileItem,
+                    getPreviousFileItem(
+                        pathFileIndex.fileItems, fileItem.path.toString()
+                    ),
+                    profile.fileItemValidationConfig
+                )
+            )
+        }
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
         val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
