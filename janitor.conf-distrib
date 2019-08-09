@@ -62,6 +62,10 @@ config {
             // Remove all invalid items
             all-invalid-items = false
         }
+
+        // What to do with items selected for clean up
+        // Just notify, don't remove or compress
+        action = "notify"
 	}
 
 	profiles = ["mysite", "nginx-logs"]
@@ -86,6 +90,10 @@ config {
                 file-size-at-least-as-in-previous = false
             }
         }
+
+        // What to do with items selected for clean up
+        // Remove from disk
+        action = "remove"
 	}
 
 	mysql-dumps {
@@ -111,6 +119,10 @@ config {
                 size-at-least-as-previous = false
             }
         }
+
+        // What to do with items selected for clean up
+        // Compress
+        action = "compress"
 	}
 
 }
