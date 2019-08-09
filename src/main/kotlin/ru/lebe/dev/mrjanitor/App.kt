@@ -18,7 +18,7 @@ import java.io.File
 class App {
 
     companion object {
-        const val VERSION = "1.0.0"
+        const val VERSION = "1.0.0 BETA"
         const val CONFIG_FILE = "janitor.conf"
 
         @JvmStatic
