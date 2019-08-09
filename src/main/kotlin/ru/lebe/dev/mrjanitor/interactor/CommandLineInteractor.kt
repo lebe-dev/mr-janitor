@@ -49,20 +49,13 @@ class CommandLineInteractor(
             presenter.showMessage("~ getting items for clean up..")
 
             when(profile.storageUnit) {
-                StorageUnit.DIRECTORY -> {
-                    when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
-                        is Either.Right -> showDirectoryItemsForCleanUp(directoryItems.b)
-                        is Either.Left -> presenter.showError("unable to get directory items " +
-                                                              "for cleanup, profile '${profile.name}'")
-                    }
-                }
+                StorageUnit.DIRECTORY -> getDirectoryItemsForCleanUp(profile) { showDirectoryItemsForCleanUp(it) }
                 StorageUnit.FILE -> {
                     when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
                         is Either.Right -> showFileItemsForCleanUp(fileItems.b)
                         is Either.Left -> presenter.showError("unable to get file items " +
                                                               "for cleanup, profile '${profile.name}'")
                     }
-
                 }
             }
         }
@@ -78,13 +71,17 @@ class CommandLineInteractor(
     }
 
     private fun cleanUpDirectoryItems(profile: Profile) {
-        when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
-            is Either.Right -> {
-                when(profile.cleanAction) {
-                    CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(directoryItems.b)
-                    else -> showDirectoryItemsForCleanUp(directoryItems.b)
-                }
+        getDirectoryItemsForCleanUp(profile) { directoryItems ->
+            when(profile.cleanAction) {
+                CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(directoryItems)
+                else -> showDirectoryItemsForCleanUp(directoryItems)
             }
+        }
+    }
+
+    private fun getDirectoryItemsForCleanUp(profile: Profile, body: (List<DirectoryItem>) -> Unit) {
+        when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
+            is Either.Right -> body(directoryItems.b)
             is Either.Left -> presenter.showError("unable to get directory items " +
                                                   "for cleanup, profile '${profile.name}'")
         }
