@@ -63,7 +63,7 @@ class ReadConfigFromFileTest: StringSpec({
                 lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
                 lastProfile.directoryNameFilter.pattern shouldBe "\\d{4}"
                 lastProfile.keepItemsQuantity shouldBe 14
-                lastProfile.cleanAction shouldBe CleanAction.COMPRESS
+                lastProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
 
                 val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
                 fileItemValidationConfig2.sizeAtLeastAsPrevious shouldBe false

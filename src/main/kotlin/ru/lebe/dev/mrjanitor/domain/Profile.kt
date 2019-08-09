@@ -30,5 +30,5 @@ enum class StorageUnit {
 }
 
 enum class CleanAction {
-    COMPRESS, REMOVE, JUST_NOTIFY
+    REMOVE, JUST_NOTIFY
 }

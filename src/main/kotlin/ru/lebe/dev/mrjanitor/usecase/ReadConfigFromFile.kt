@@ -184,7 +184,7 @@ class ReadConfigFromFile {
                     cleanUpPolicy = getCleanUpPolicy(
                         config, "$profileName.cleanup", defaultProfile.cleanUpPolicy
                     ),
-                    cleanAction = getCleanAction(config, profileName, CleanAction.JUST_NOTIFY)
+                    cleanAction = getCleanAction(config, profileName)
                 )
             )
 
@@ -285,16 +285,21 @@ class ReadConfigFromFile {
             else -> defaultValue
         }
 
-    private fun getCleanAction(config: Config, profilePath: String, defaultValue: CleanAction): CleanAction =
-        if (config.hasPath("$profilePath.action")) {
-            when(config.getString("$profilePath.action")) {
-                CleanAction.COMPRESS.toString().toLowerCase() -> CleanAction.COMPRESS
+    private fun getCleanAction(config: Config, profilePath: String): CleanAction {
+        val actionPropertyPath = "$profilePath.action"
+
+        return if (config.hasPath(actionPropertyPath)) {
+            when (config.getString(actionPropertyPath)) {
                 CleanAction.REMOVE.toString().toLowerCase() -> CleanAction.REMOVE
-                else -> defaultValue
+                else -> {
+                    log.warn("unsupported action, use default action 'notify'")
+                    CleanAction.JUST_NOTIFY
+                }
             }
 
         } else {
-            defaultValue
+            CleanAction.JUST_NOTIFY
         }
+    }
 
 }

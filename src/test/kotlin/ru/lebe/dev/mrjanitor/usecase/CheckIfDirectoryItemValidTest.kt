@@ -161,7 +161,7 @@ internal class CheckIfDirectoryItemValidTest {
             directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepItemsQuantity = 3,
             directoryItemValidationConfig = directoryValidationConfig,
             cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
+            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
         val pathIndex = createFileIndex.create(profile)
@@ -221,7 +221,7 @@ internal class CheckIfDirectoryItemValidTest {
                 directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepItemsQuantity = 3,
                 directoryItemValidationConfig = directoryValidationConfig,
                 cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.COMPRESS
+                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
         val pathIndex = createFileIndex.create(profile)
@@ -281,7 +281,7 @@ internal class CheckIfDirectoryItemValidTest {
             directoryItemValidationConfig = directoryValidationConfig,
             fileItemValidationConfig = fileItemValidationConfig,
             cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-            cleanAction = CleanAction.COMPRESS
+            cleanAction = CleanAction.JUST_NOTIFY
         )
 
         val pathIndex = createFileIndex.create(profile)
