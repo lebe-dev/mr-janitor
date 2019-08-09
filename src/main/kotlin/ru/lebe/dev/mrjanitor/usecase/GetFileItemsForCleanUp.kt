@@ -52,7 +52,6 @@ class GetFileItemsForCleanUp(
 
     private fun getValidatedItems(profile: Profile, pathFileIndex: PathFileIndex): List<FileItem> =
         pathFileIndex.fileItems.map { fileItem ->
-
             fileItem.copy(
                 valid = checkIfFileItemValid.isValid(
                     fileItem = fileItem,

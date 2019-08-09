@@ -27,16 +27,16 @@ class GetDirectoryItemsForCleanUp(
 
             when(val fileIndex = createFileIndex.create(profile)) {
                 is Either.Right -> {
-                    val validatedDirectoryItems = getValidatedDirectoryItems(profile, fileIndex.b)
+                    val validatedDirectoryItems = getValidatedItems(profile, fileIndex.b)
 
                     val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
-                        .sortedBy { it.name }
-                        .takeLast(profile.keepItemsQuantity)
-                        .map { it.path.toString() }
+                                                                     .sortedBy { it.name }
+                                                                     .takeLast(profile.keepItemsQuantity)
+                                                                     .map { it.path.toString() }
 
                     val results = when {
                         profile.cleanUpPolicy.allInvalidItems ->
-                            getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
+                                                        getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
 
                         profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
                             var validCounter = 0
@@ -70,7 +70,7 @@ class GetDirectoryItemsForCleanUp(
         }
     }
 
-    private fun getValidatedDirectoryItems(profile: Profile, pathFileIndex: PathFileIndex): List<DirectoryItem> =
+    private fun getValidatedItems(profile: Profile, pathFileIndex: PathFileIndex): List<DirectoryItem> =
         pathFileIndex.directoryItems.map { directoryItem ->
             val previousDirectoryItem = getPreviousItem(pathFileIndex, directoryItem)
 
