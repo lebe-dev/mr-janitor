@@ -100,9 +100,7 @@ class CommandLineInteractor(
             presenter.showMessage("---")
             presenter.showMessage("items total: ${directoryItems.size}")
 
-        } else {
-            presenter.showMessage("nothing to clean up ;)")
-        }
+        } else { presenter.showMessage("nothing to clean up ;)") }
     }
 
     private fun showFileItemsForCleanUp(fileItems: List<FileItem>) {
@@ -119,8 +117,6 @@ class CommandLineInteractor(
             presenter.showMessage("---")
             presenter.showMessage("items total: ${fileItems.size}")
 
-        } else {
-            presenter.showMessage("nothing to clean up ;)")
-        }
+        } else { presenter.showMessage("nothing to clean up ;)") }
     }
 }
