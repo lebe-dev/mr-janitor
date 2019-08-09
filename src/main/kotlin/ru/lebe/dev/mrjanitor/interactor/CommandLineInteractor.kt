@@ -50,13 +50,7 @@ class CommandLineInteractor(
 
             when(profile.storageUnit) {
                 StorageUnit.DIRECTORY -> getDirectoryItemsForCleanUp(profile) { showDirectoryItemsForCleanUp(it) }
-                StorageUnit.FILE -> {
-                    when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
-                        is Either.Right -> showFileItemsForCleanUp(fileItems.b)
-                        is Either.Left -> presenter.showError("unable to get file items " +
-                                                              "for cleanup, profile '${profile.name}'")
-                    }
-                }
+                StorageUnit.FILE -> getFileItemsForCleanUp(profile) { showFileItemsForCleanUp(it) }
             }
         }
     }
@@ -84,6 +78,14 @@ class CommandLineInteractor(
             is Either.Right -> body(directoryItems.b)
             is Either.Left -> presenter.showError("unable to get directory items " +
                                                   "for cleanup, profile '${profile.name}'")
+        }
+    }
+
+    private fun getFileItemsForCleanUp(profile: Profile, body: (List<FileItem>) -> Unit) {
+        when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
+            is Either.Right -> body(fileItems.b)
+            is Either.Left -> presenter.showError("unable to get file items " +
+                    "for cleanup, profile '${profile.name}'")
         }
     }
 
