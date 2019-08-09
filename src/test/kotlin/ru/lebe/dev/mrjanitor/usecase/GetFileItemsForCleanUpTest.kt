@@ -13,6 +13,7 @@ import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
@@ -22,6 +23,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentLogFil
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createInvalidArchiveFiles
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
+import ru.lebe.dev.mrjanitor.util.assertErrorResult
 import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -163,6 +165,20 @@ internal class GetFileItemsForCleanUpTest {
         assertRightResult(useCase.getFileItems(profile)) { results ->
             assertEquals(6, results.size)
         }
+    }
+
+    @Test
+    fun `Return MISCONFIGURATION error when keep-items-quantity equals zero`() {
+        createValidArchiveFiles(indexPath, 3)
+        createInvalidArchiveFiles(indexPath, 2)
+        createValidArchiveFiles(indexPath, 2)
+        createInvalidArchiveFiles(indexPath, 1)
+
+        //
+
+        val profile = profile.copy(keepItemsQuantity = 0)
+
+        assertErrorResult(useCase.getFileItems(profile), OperationResult.MISCONFIGURATION)
     }
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {

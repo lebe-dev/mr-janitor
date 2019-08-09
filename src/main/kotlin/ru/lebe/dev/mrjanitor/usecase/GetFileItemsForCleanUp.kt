@@ -20,26 +20,33 @@ class GetFileItemsForCleanUp(
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
-        return when(val fileIndex = createFileIndex.create(profile)) {
-            is Either.Right -> {
-                val validatedFileItems = getValidatedItems(profile, fileIndex.b)
+        return if (profile.keepItemsQuantity > 0) {
 
-                val validFilePaths = validatedFileItems.filter { it.valid }
-                                                       .sortedBy { it.path.toFile().lastModified() }
-                                                       .takeLast(profile.keepItemsQuantity)
-                                                       .map { it.path.toString() }
+            when(val fileIndex = createFileIndex.create(profile)) {
+                is Either.Right -> {
+                    val validatedFileItems = getValidatedItems(profile, fileIndex.b)
 
-                val results = when {
-                    profile.cleanUpPolicy.allInvalidItems -> getAllInvalidItems(validatedFileItems, validFilePaths)
+                    val validFilePaths = validatedFileItems.filter { it.valid }
+                        .sortedBy { it.path.toFile().lastModified() }
+                        .takeLast(profile.keepItemsQuantity)
+                        .map { it.path.toString() }
 
-                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
-                                          getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
-                    else -> listOf()
+                    val results = when {
+                        profile.cleanUpPolicy.allInvalidItems -> getAllInvalidItems(validatedFileItems, validFilePaths)
+
+                        profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
+                            getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
+                        else -> listOf()
+                    }
+
+                    Either.right(results)
                 }
-
-                Either.right(results)
+                is Either.Left -> Either.left(OperationResult.ERROR)
             }
-            is Either.Left -> Either.left(OperationResult.ERROR)
+
+        } else {
+            log.error("misconfiguration - keep-items-quantity equals zero")
+            Either.left(OperationResult.MISCONFIGURATION)
         }
     }
 
