@@ -33,24 +33,8 @@ class GetFileItemsForCleanUp(
                     profile.cleanUpPolicy.allInvalidItems ->
                                                 validatedFileItems.filterNot { it.path.toString() in validFilePaths }
 
-                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
-                        var lastValidItemsFound = 0
-
-                        val excludeItems = validatedFileItems.takeLastWhile {
-                            if (isValidItemInKeepRange(it, profile.keepItemsQuantity, lastValidItemsFound)) {
-                                lastValidItemsFound++
-                                true
-
-                            } else {
-                                lastValidItemsFound < profile.keepItemsQuantity
-                            }
-
-                        }.map { it.path.toString() }
-
-                        validatedFileItems.filterNot {
-                            it.path.toString() in excludeItems
-                        }
-                    }
+                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
+                                          getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
                     else -> listOf()
                 }
 
@@ -71,6 +55,23 @@ class GetFileItemsForCleanUp(
                 )
             )
         }
+
+    private fun getInvalidItemsBeyondKeepRange(fileItems: List<FileItem>, keepItemsQuantity: Int): List<FileItem> {
+        var lastValidItemsFound = 0
+
+        val excludeItems = fileItems.takeLastWhile {
+            if (isValidItemInKeepRange(it, keepItemsQuantity, lastValidItemsFound)) {
+                lastValidItemsFound++
+                true
+
+            } else {
+                lastValidItemsFound < keepItemsQuantity
+            }
+
+        }.map { it.path.toString() }
+
+        return fileItems.filterNot { it.path.toString() in excludeItems }
+    }
 
     private fun isValidItemInKeepRange(fileItem: FileItem, keepItemsQuantity: Int, currentItemQuantity: Int): Boolean =
         fileItem.valid && (currentItemQuantity < keepItemsQuantity)
