@@ -4,6 +4,22 @@ Deal with outdated files in a smart way.
 
 На [русском](README-RU.md).
 
+## Features
+
+1. Cleanup outdated files
+
+2. Support two file object types:
+ - Directory
+ - File
+
+3. Data validation  
+ - Size comparison
+ - Md5 Check
+ - Zip test
+ - Custom command
+
+4.Configurable cleanup policy
+
 ## How to use
 
 Create configuration file `janitor.conf`:
