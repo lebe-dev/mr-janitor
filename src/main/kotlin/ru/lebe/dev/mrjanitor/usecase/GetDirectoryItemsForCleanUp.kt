@@ -38,24 +38,9 @@ class GetDirectoryItemsForCleanUp(
                         profile.cleanUpPolicy.allInvalidItems ->
                                                         getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
 
-                        profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
-                            var validCounter = 0
+                        profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
+                                    getInvalidItemsBeyondKeepRange(validatedDirectoryItems, profile.keepItemsQuantity)
 
-                            val excludeItems = validatedDirectoryItems.takeLastWhile {
-                                if (it.valid && (validCounter < profile.keepItemsQuantity)) {
-                                    validCounter++
-                                    true
-
-                                } else {
-                                    validCounter < profile.keepItemsQuantity
-                                }
-
-                            }.map { it.path.toString() }
-
-                            validatedDirectoryItems.filterNot {
-                                it.path.toString() in excludeItems
-                            }
-                        }
                         else -> listOf()
                     }
 
@@ -69,6 +54,27 @@ class GetDirectoryItemsForCleanUp(
             Either.left(OperationError.MISCONFIGURATION)
         }
     }
+
+    private fun getInvalidItemsBeyondKeepRange(items: List<DirectoryItem>,
+                                               keepItemsQuantity: Int): List<DirectoryItem> {
+        var lastValidItemsFound = 0
+
+        val excludeItems = items.takeLastWhile {
+            if (isValidItemInKeepRange(it, keepItemsQuantity, lastValidItemsFound)) {
+                lastValidItemsFound++
+                true
+
+            } else {
+                lastValidItemsFound < keepItemsQuantity
+            }
+
+        }.map { it.path.toString() }
+
+        return items.filterNot { it.path.toString() in excludeItems }
+    }
+
+    private fun isValidItemInKeepRange(item: DirectoryItem, keepItemsQuantity: Int, currentItemQuantity: Int): Boolean =
+                                                            item.valid && (currentItemQuantity < keepItemsQuantity)
 
     private fun getValidatedItems(profile: Profile, pathFileIndex: PathFileIndex): List<DirectoryItem> =
         pathFileIndex.directoryItems.map { directoryItem ->

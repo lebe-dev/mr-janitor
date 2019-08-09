@@ -35,7 +35,7 @@ class GetFileItemsForCleanUp(
                         profile.cleanUpPolicy.allInvalidItems -> getAllInvalidItems(validatedFileItems, validFilePaths)
 
                         profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity ->
-                            getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
+                                          getInvalidItemsBeyondKeepRange(validatedFileItems, profile.keepItemsQuantity)
                         else -> listOf()
                     }
 
@@ -82,7 +82,7 @@ class GetFileItemsForCleanUp(
     }
 
     private fun isValidItemInKeepRange(fileItem: FileItem, keepItemsQuantity: Int, currentItemQuantity: Int): Boolean =
-        fileItem.valid && (currentItemQuantity < keepItemsQuantity)
+                                                            fileItem.valid && (currentItemQuantity < keepItemsQuantity)
 
     private fun getPreviousFileItem(fileItems: List<FileItem>, fileItemPath: String): Option<FileItem> {
         val itemsBeforeCurrent = fileItems.takeWhile { it.path.toString() != fileItemPath }
