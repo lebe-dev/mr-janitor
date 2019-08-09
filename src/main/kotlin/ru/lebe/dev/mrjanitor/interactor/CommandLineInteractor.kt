@@ -1,6 +1,7 @@
 package ru.lebe.dev.mrjanitor.interactor
 
 import arrow.core.Either
+import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.Profile
@@ -28,7 +29,12 @@ class CommandLineInteractor(
                 StorageUnit.DIRECTORY -> cleanUpDirectoryItems(profile)
                 StorageUnit.FILE -> {
                     when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
-                        is Either.Right -> cleanUpStorageItems.cleanUp(fileItems.b)
+                        is Either.Right ->
+                            when(profile.cleanAction) {
+                                CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(fileItems.b)
+                                else -> showFileItemsForCleanUp(fileItems.b)
+                            }
+
                         is Either.Left -> presenter.showError("unable to get file items " +
                                                               "for cleanup, profile '${profile.name}'")
                     }
@@ -51,7 +57,6 @@ class CommandLineInteractor(
                     }
                 }
                 StorageUnit.FILE -> {
-
                     when(val fileItems = getFileItemsForCleanUp.getFileItems(profile)) {
                         is Either.Right -> showFileItemsForCleanUp(fileItems.b)
                         is Either.Left -> presenter.showError("unable to get file items " +
@@ -74,9 +79,14 @@ class CommandLineInteractor(
 
     private fun cleanUpDirectoryItems(profile: Profile) {
         when(val directoryItems = getDirectoryItemsForCleanUp.getItems(profile)) {
-            is Either.Right -> cleanUpStorageItems.cleanUp(directoryItems.b)
+            is Either.Right -> {
+                when(profile.cleanAction) {
+                    CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(directoryItems.b)
+                    else -> showDirectoryItemsForCleanUp(directoryItems.b)
+                }
+            }
             is Either.Left -> presenter.showError("unable to get directory items " +
-                    "for cleanup, profile '${profile.name}'")
+                                                  "for cleanup, profile '${profile.name}'")
         }
     }
 
