@@ -10,14 +10,17 @@ import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
+import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.SampleDataProvider
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
+import ru.lebe.dev.mrjanitor.util.assertErrorResult
 import ru.lebe.dev.mrjanitor.util.getDateFromString
 import java.nio.file.Files
 import java.nio.file.Path
@@ -225,6 +228,20 @@ internal class GetDirectoryItemsForCleanUpTest {
             }
             is Either.Left -> throw Exception("assert exception")
         }
+    }
+
+    @Test
+    fun `Return MISCONFIGURATION error when keep-items-quantity equals zero`() {
+        createValidArchiveFiles(indexPath, 3)
+        SampleDataProvider.createInvalidArchiveFiles(indexPath, 2)
+        createValidArchiveFiles(indexPath, 2)
+        SampleDataProvider.createInvalidArchiveFiles(indexPath, 1)
+
+        //
+
+        val profile = profile.copy(keepItemsQuantity = 0)
+
+        assertErrorResult(useCase.getItems(profile), OperationError.MISCONFIGURATION)
     }
 
     private fun createValidDirectory(directoryName: String, filesAmount: Int) {

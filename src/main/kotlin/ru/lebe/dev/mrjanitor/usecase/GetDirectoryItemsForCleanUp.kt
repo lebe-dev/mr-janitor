@@ -23,43 +23,50 @@ class GetDirectoryItemsForCleanUp(
         log.info(LOG_ROW_SEPARATOR)
         log.info("- path: '${profile.path}'")
 
-        return when(val fileIndex = createFileIndex.create(profile)) {
-            is Either.Right -> {
-                val validatedDirectoryItems = getValidatedDirectoryItems(profile, fileIndex.b)
+        return if (profile.keepItemsQuantity > 0) {
 
-                val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
-                                                                 .sortedBy { it.name }
-                                                                 .takeLast(profile.keepItemsQuantity)
-                                                                 .map { it.path.toString() }
+            when(val fileIndex = createFileIndex.create(profile)) {
+                is Either.Right -> {
+                    val validatedDirectoryItems = getValidatedDirectoryItems(profile, fileIndex.b)
 
-                val results = when {
-                    profile.cleanUpPolicy.allInvalidItems ->
-                                                        getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
+                    val validDirectoryPaths = validatedDirectoryItems.filter { it.valid }
+                        .sortedBy { it.name }
+                        .takeLast(profile.keepItemsQuantity)
+                        .map { it.path.toString() }
 
-                    profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
-                        var validCounter = 0
+                    val results = when {
+                        profile.cleanUpPolicy.allInvalidItems ->
+                            getInvalidItems(validatedDirectoryItems, validDirectoryPaths)
 
-                        val excludeItems = validatedDirectoryItems.takeLastWhile {
-                            if (it.valid && (validCounter < profile.keepItemsQuantity)) {
-                                validCounter++
-                                true
+                        profile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity -> {
+                            var validCounter = 0
 
-                            } else {
-                                validCounter < profile.keepItemsQuantity
+                            val excludeItems = validatedDirectoryItems.takeLastWhile {
+                                if (it.valid && (validCounter < profile.keepItemsQuantity)) {
+                                    validCounter++
+                                    true
+
+                                } else {
+                                    validCounter < profile.keepItemsQuantity
+                                }
+
+                            }.map { it.path.toString() }
+
+                            validatedDirectoryItems.filterNot {
+                                it.path.toString() in excludeItems
                             }
-
-                        }.map { it.path.toString() }
-
-                        validatedDirectoryItems.filterNot {
-                            it.path.toString() in excludeItems
                         }
+                        else -> listOf()
                     }
-                    else -> listOf()
-                }
 
-                Either.right(results)
+                    Either.right(results)
+                }
+                is Either.Left -> Either.left(OperationError.ERROR)
             }
-            is Either.Left -> Either.left(OperationError.ERROR)
+
+        } else {
+            log.error("misconfiguration - keep-items-quantity equals zero")
+            Either.left(OperationError.MISCONFIGURATION)
         }
     }
 
