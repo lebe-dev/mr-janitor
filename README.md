@@ -28,6 +28,33 @@ Create configuration file `janitor.conf`:
 cp janitor.conf-distrib janitor.conf 
 ```
 
+## How to install
+
+Create app directory:
+
+```
+mkdir /opt/janitor
+chown -R janitor.janitor /opt/janitor
+chmod 750 /opt/janitor
+```
+
+Create special user `janitor`.
+
+Add permissions to access directory with data:
+
+```
+setfacl -Rm u:janitor:rwx /backups
+```
+
+Add line to cron schedule:
+
+```
+# backups cleanup by janitor
+0 19  *  *  *  janitor java -jar /opt/janitor/janitor.jar cleanup
+```
+
+Restart crond.
+
 ### Clean up
 
 Clean old items:

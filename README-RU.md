@@ -24,6 +24,35 @@
 cp janitor.conf-distrib-ru janitor.conf 
 ```
 
+## Установка
+
+Создайте каталог для приложения:
+
+```
+mkdir /opt/janitor
+chown -R janitor.janitor /opt/janitor
+chmod 750 /opt/janitor
+```
+
+Создайте нового пользователя `janitor`.
+
+Дайте права для доступа к каталогу с данными
+
+Например:
+
+```
+setfacl -Rm u:janitor:rwx /backups
+```
+
+Добавьте строку запуска в cron:
+
+```
+# backups cleanup by janitor
+0 19  *  *  *  janitor java -jar /opt/janitor/janitor.jar cleanup
+```
+
+Перезапустите crond.
+
 ### Очистка ненужных файлов / Clean Up
 
 Очистка ненужных файлов:
