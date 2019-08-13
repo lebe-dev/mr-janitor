@@ -1,6 +1,7 @@
 package ru.lebe.dev.mrjanitor.interactor
 
 import arrow.core.Either
+import arrow.core.Try
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
@@ -8,15 +9,19 @@ import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.presenter.AppPresenter
 import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
+import ru.lebe.dev.mrjanitor.usecase.CreateFileReport
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
+import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.Defaults.LOG_ROW_BOLD_SEPARATOR
+import java.io.File
 import java.util.Date
 
 class CommandLineInteractor(
     private val getFileItemsForCleanUp: GetFileItemsForCleanUp,
     private val getDirectoryItemsForCleanUp: GetDirectoryItemsForCleanUp,
     private val cleanUpStorageItems: CleanUpStorageItems,
+    private val createFileReport: CreateFileReport,
     private val presenter: AppPresenter
 ) {
 
@@ -29,7 +34,7 @@ class CommandLineInteractor(
                 StorageUnit.DIRECTORY -> cleanUpDirectoryItems(profile)
                 StorageUnit.FILE -> getFileItemsForCleanUp(profile) { fileItems ->
                     when(profile.cleanAction) {
-                        CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(fileItems)
+                        CleanAction.REMOVE -> cleanUpFileItems(fileItems)
                         else -> showFileItemsForCleanUp(fileItems)
                     }
                 }
@@ -65,6 +70,13 @@ class CommandLineInteractor(
         }
     }
 
+    private fun cleanUpFileItems(fileItems: List<FileItem>) {
+        when(cleanUpStorageItems.cleanUp(fileItems)) {
+            is Try.Success -> createSuccessFileReport()
+            is Try.Failure -> createFailureFileReport()
+        }
+    }
+
     private fun showProfileBanner(profile: Profile) {
         presenter.showMessage(LOG_ROW_BOLD_SEPARATOR)
         presenter.showMessage(" PROFILE '${profile.name}'")
@@ -77,11 +89,22 @@ class CommandLineInteractor(
     private fun cleanUpDirectoryItems(profile: Profile) {
         getDirectoryItemsForCleanUp(profile) { directoryItems ->
             when(profile.cleanAction) {
-                CleanAction.REMOVE -> cleanUpStorageItems.cleanUp(directoryItems)
+                CleanAction.REMOVE -> {
+                    when(cleanUpStorageItems.cleanUp(directoryItems)) {
+                        is Try.Success -> createSuccessFileReport()
+                        is Try.Failure -> createFailureFileReport()
+                    }
+                }
                 else -> showDirectoryItemsForCleanUp(directoryItems)
             }
         }
     }
+
+    private fun createSuccessFileReport() = createFileReport(true)
+    private fun createFailureFileReport() = createFileReport(false)
+
+    private fun createFileReport(success: Boolean) =
+                                            createFileReport.create(File(Defaults.REPORT_FILE_NAME), success, Date())
 
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {
         if (directoryItems.isNotEmpty()) {

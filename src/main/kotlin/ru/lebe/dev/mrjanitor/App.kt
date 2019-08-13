@@ -10,6 +10,7 @@ import ru.lebe.dev.mrjanitor.usecase.CheckIfDirectoryItemValid
 import ru.lebe.dev.mrjanitor.usecase.CheckIfFileItemValid
 import ru.lebe.dev.mrjanitor.usecase.CleanUpStorageItems
 import ru.lebe.dev.mrjanitor.usecase.CreateFileIndex
+import ru.lebe.dev.mrjanitor.usecase.CreateFileReport
 import ru.lebe.dev.mrjanitor.usecase.GetDirectoryItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.GetFileItemsForCleanUp
 import ru.lebe.dev.mrjanitor.usecase.ReadConfigFromFile
@@ -56,8 +57,10 @@ class App {
                                   cleanUpStorageItems: CleanUpStorageItems,
                                   presenter: AppPresenter) =
             CommandLineInteractor(
+                presenter = presenter,
                 getFileItemsForCleanUp = getFileItemsForCleanUp,
-                getDirectoryItemsForCleanUp = getDirectoryItemsForCleanUp, presenter = presenter,
+                getDirectoryItemsForCleanUp = getDirectoryItemsForCleanUp,
+                createFileReport = CreateFileReport(),
                 cleanUpStorageItems = cleanUpStorageItems
             )
 

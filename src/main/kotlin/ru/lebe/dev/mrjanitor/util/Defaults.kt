@@ -3,6 +3,8 @@ package ru.lebe.dev.mrjanitor.util
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 
 object Defaults {
+    const val REPORT_FILE_NAME = "janitor.report"
+
     const val PROFILE_NAME = "defaults"
 
     const val LOG_ROW_BOLD_SEPARATOR = "================================================="
