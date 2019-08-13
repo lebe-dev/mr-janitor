@@ -3,6 +3,7 @@ package ru.lebe.dev.mrjanitor.usecase
 import arrow.core.Try
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.StorageItem
+import java.nio.file.Path
 
 class CleanUpStorageItems {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -14,15 +15,37 @@ class CleanUpStorageItems {
         items.forEach { item ->
             log.info("- remove item '${item.path}'..")
 
-            if (item.path.toFile().exists()) {
-                item.path.toFile().deleteRecursively()
-                log.info("- deleted: '${item.path}'")
+            if (item.path.toFile().isDirectory) {
+                deleteDirectory(item.path)
 
             } else {
-                log.warn("- item path doesn't exist")
+                deleteFile(item.path)
             }
         }
 
         log.info("all items have been removed")
+    }
+
+    private fun deleteFile(path: Path) {
+        if (path.toFile().delete()) {
+            log.info("- deleted: '$path'")
+
+        } else {
+            log.error("unable to delete file item")
+        }
+    }
+
+    private fun deleteDirectory(path: Path) {
+        if (path.toFile().deleteRecursively()) {
+            if (path.toFile().delete()) {
+                log.info("- deleted: '$path'")
+
+            } else {
+                log.error("unable to delete directory")
+            }
+
+        } else {
+            log.error("unable to delete item path")
+        }
     }
 }
