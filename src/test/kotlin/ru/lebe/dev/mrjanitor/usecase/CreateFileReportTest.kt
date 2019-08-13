@@ -1,8 +1,8 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.Try
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.nio.file.Files
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -15,7 +15,7 @@ internal class CreateFileReportTest {
     fun `Report file should contains success property`() {
         val reportFile = Files.createTempFile("", "").toFile()
 
-        assertRightResult(createFileReport.create(reportFile, true, Date())) {
+        assertTrySuccess(createFileReport.create(reportFile, true, Date())) {
             assertTrue(it.readText().contains("success=true"))
         }
     }
@@ -28,7 +28,7 @@ internal class CreateFileReportTest {
 
         val expectedTimestamp = SimpleDateFormat("yyyy-MM-dd HH\\:mm\\:ss").format(finished)
 
-        assertRightResult(createFileReport.create(reportFile, true, finished)) {
+        assertTrySuccess(createFileReport.create(reportFile, true, finished)) {
             assertTrue(it.readText().contains("finishedStr=$expectedTimestamp"))
         }
     }
@@ -39,8 +39,17 @@ internal class CreateFileReportTest {
 
         val finished = Date()
 
-        assertRightResult(createFileReport.create(reportFile, true, finished)) {
+        assertTrySuccess(createFileReport.create(reportFile, true, finished)) {
             assertTrue(it.readText().contains("finished=${finished.time / 1000}"))
+        }
+    }
+
+    fun <E> assertTrySuccess(result: Try<E>, body: (E) -> Unit) {
+        assertTrue(result.isSuccess())
+
+        when(result) {
+            is Try.Success -> body(result.value)
+            is Try.Failure -> throw Exception("assert error")
         }
     }
 }

@@ -2,6 +2,7 @@ package ru.lebe.dev.mrjanitor.interactor
 
 import arrow.core.Either
 import arrow.core.Try
+import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
@@ -24,6 +25,7 @@ class CommandLineInteractor(
     private val createFileReport: CreateFileReport,
     private val presenter: AppPresenter
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun cleanup(profiles: List<Profile>) {
         profiles.forEach { profile ->
@@ -104,7 +106,10 @@ class CommandLineInteractor(
     private fun createFailureFileReport() = createFileReport(false)
 
     private fun createFileReport(success: Boolean) =
-                                            createFileReport.create(File(Defaults.REPORT_FILE_NAME), success, Date())
+                                    when(createFileReport.create(File(Defaults.REPORT_FILE_NAME), success, Date())) {
+                                        is Try.Success -> log.debug("file report has been saved")
+                                        is Try.Failure -> log.error("unable to create file report")
+                                    }
 
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {
         if (directoryItems.isNotEmpty()) {
