@@ -31,8 +31,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-api:1.7.25")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.2.0")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.5.2")
 
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
 }
