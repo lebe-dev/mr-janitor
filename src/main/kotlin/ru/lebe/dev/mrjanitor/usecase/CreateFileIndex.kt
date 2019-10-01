@@ -94,7 +94,10 @@ class CreateFileIndex {
     private fun getDirectoryItemsFromPath(path: Path, directoryNameFilter: Regex,
                                           fileNameFilter: Regex, md5HashRequired: Boolean) = Try<List<DirectoryItem>> {
 
-    val results = arrayListOf<DirectoryItem>()
+        log.debug("get directory items from path '$path', directory-name-filter '$directoryNameFilter'")
+        log.debug("file-name-filter '$fileNameFilter', md5-hash-required: $md5HashRequired")
+
+        val results = arrayListOf<DirectoryItem>()
 
         path.toFile().listFiles()?.filter { it.isDirectory && directoryNameFilter.matches(it.name) }
                                  ?.sortedBy { it.name }?.forEach { directory ->
@@ -103,13 +106,17 @@ class CreateFileIndex {
                 is Success -> {
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
-                    results += DirectoryItem(
+                    val directoryItem = DirectoryItem(
                         path = directory.toPath(),
                         name = directory.name,
                         size = directorySize,
                         fileItems = fileItems.value,
                         valid = false
                     )
+
+                    log.debug(directoryItem.toString())
+
+                    results += directoryItem
                 }
                 is Failure -> throw IOException("unable to get file items for path: ${fileItems.exception.message}")
             }
