@@ -33,10 +33,21 @@ class CommandLineInteractor(
             presenter.showMessage("~ getting items for clean up..")
 
             when(profile.storageUnit) {
-                StorageUnit.DIRECTORY -> cleanUpDirectoryItems(profile)
+                StorageUnit.DIRECTORY -> {
+                    presenter.showMessage("cleanup items for profile '${profile.name}'")
+                    cleanUpDirectoryItems(profile)
+                    presenter.showMessage("---")
+                    presenter.showMessage("completed")
+                }
                 StorageUnit.FILE -> getFileItemsForCleanUp(profile) { fileItems ->
                     when(profile.cleanAction) {
-                        CleanAction.REMOVE -> cleanUpFileItems(fileItems)
+                        CleanAction.REMOVE -> {
+                            presenter.showMessage("cleanup items: ${fileItems.size}")
+                            presenter.showMessage("cleanup..")
+                            cleanUpFileItems(fileItems)
+                            presenter.showMessage("---")
+                            presenter.showMessage("completed")
+                        }
                         else -> showFileItemsForCleanUp(fileItems)
                     }
                 }
