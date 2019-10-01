@@ -97,11 +97,6 @@ class GetDirectoryItemsForCleanUp(
             item.path.toString() != currentDirectoryItem.path.toString()
         }.lastOrNull()
 
-        return if (lastFilteredItem != null) {
-            Some(lastFilteredItem)
-
-        } else {
-            None
-        }
+        return if (lastFilteredItem != null) { Some(lastFilteredItem) } else { None }
     }
 }
