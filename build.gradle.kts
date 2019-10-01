@@ -24,7 +24,7 @@ dependencies {
 
     implementation("io.arrow-kt:arrow-core-data:0.9.0")
 
-    implementation("com.typesafe:config:1.3.3")
+    implementation("com.typesafe:config:1.3.4")
 
     implementation("commons-codec:commons-codec:1.12")
     
