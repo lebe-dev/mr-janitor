@@ -34,7 +34,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:5.5.2")
 
-    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
 }
 
 tasks.withType<KotlinCompile> {
