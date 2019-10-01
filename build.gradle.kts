@@ -53,7 +53,7 @@ val test by tasks.getting(Test::class) {
 }
 
 detekt {
-    toolVersion = "1.0.0-RC15"
+    toolVersion = "1.0.1"
 
     input = project.files("src/main/kotlin")
 
