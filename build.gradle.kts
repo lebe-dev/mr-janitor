@@ -26,7 +26,7 @@ dependencies {
 
     implementation("com.typesafe:config:1.3.4")
 
-    implementation("commons-codec:commons-codec:1.12")
+    implementation("commons-codec:commons-codec:1.13")
     
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-api:1.7.25")
