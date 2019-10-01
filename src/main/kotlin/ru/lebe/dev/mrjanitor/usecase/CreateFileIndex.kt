@@ -104,6 +104,8 @@ class CreateFileIndex {
 
             when(val fileItems = getFileItemsFromPath(directory.toPath(), fileNameFilter, md5HashRequired)) {
                 is Success -> {
+                    log.debug("file-items obtained: ${fileItems.value.size}")
+
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
                     val directoryItem = DirectoryItem(
@@ -123,24 +125,34 @@ class CreateFileIndex {
 
         }
 
+        log.debug("directory items obtained: ${results.size}")
+
         results
     }
 
     private fun getFileItemsFromPath(path: Path, fileNameFilter: Regex,
                                      md5HashRequired: Boolean) = Try<List<FileItem>> {
+        log.debug("get file items from path '$path', file-name-filter '$fileNameFilter', " +
+                  "md5-hash-required: $md5HashRequired")
+
         val results = arrayListOf<FileItem>()
 
         path.toFile().listFiles()?.filter { it.isFile && fileNameFilter.matches(it.name) }
                                  ?.filterNot { it.extension.toLowerCase() in listOf("md5", "log") }
                                  ?.sortedBy { it.name }
                                  ?.forEach { file ->
-            results += FileItem(
+
+            val fileItem = FileItem(
                 path = file.absoluteFile.toPath(),
                 name = file.name,
                 size = file.length(),
                 hash = getMd5Hash(file, md5HashRequired),
                 valid = false
             )
+
+            log.debug(fileItem.toString())
+
+            results += fileItem
         }
 
         results
