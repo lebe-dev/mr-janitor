@@ -124,13 +124,9 @@ class CheckIfDirectoryItemValid(
                     log.info("validation error - there are no file items in directory")
                 }
 
-            } else {
-                log.info("validation error - directory size equals 0")
-            }
+            } else { log.info("validation error - directory size equals 0") }
 
-        } else {
-            log.error("validation error - path doesn't exist")
-        }
+        } else { log.error("validation error - path doesn't exist") }
 
         return result
     }
