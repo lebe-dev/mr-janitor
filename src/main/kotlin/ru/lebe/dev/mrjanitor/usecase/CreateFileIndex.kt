@@ -108,6 +108,8 @@ class CreateFileIndex {
 
                     val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
 
+                    log.debug("- directory size: $directorySize")
+
                     val directoryItem = DirectoryItem(
                         path = directory.toPath(),
                         name = directory.name,
@@ -116,7 +118,7 @@ class CreateFileIndex {
                         valid = false
                     )
 
-                    log.debug(directoryItem.toString())
+                    log.debug("- file items: ${fileItems.value.size}")
 
                     results += directoryItem
                 }
