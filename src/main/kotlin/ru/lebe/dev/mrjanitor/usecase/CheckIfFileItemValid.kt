@@ -151,21 +151,19 @@ class CheckIfFileItemValid {
     }
 
     private fun isLogFileCheckSuccess(fileItem: FileItem): Boolean {
-        var result = false
-
         log.debug("log-file existence check")
+
+        var result = false
 
         when(val logFile = findLogFileCompanion(fileItem.path)) {
             is Some -> {
                 log.debug("log-file found at path '${logFile.t.toPath()}'")
 
                 if (isLogFileValid(logFile.t)) {
-                    log.debug("log-file found at path ''")
+                    log.debug("log-file valid '${logFile.t.absolutePath}'")
                     result = true
 
-                } else {
-                    log.debug("log-file wasn't found")
-                }
+                } else { log.debug("log-file wasn't found") }
             }
             is None -> log.debug("log-file wasn't found")
         }
@@ -187,9 +185,7 @@ class CheckIfFileItemValid {
             if (logFilePath2.exists()) {
                 Some(logFilePath2)
 
-            } else {
-                None
-            }
+            } else { None }
         }
     }
 
