@@ -155,6 +155,8 @@ class CreateFileIndex {
             results += fileItem
         }
 
+        log.debug("- items: ${results.size}")
+
         results
     }
 
