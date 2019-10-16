@@ -106,7 +106,9 @@ class CreateFileIndex {
                 is Success -> {
                     log.debug("file-items obtained: ${fileItems.value.size}")
 
-                    val directorySize = fileItems.value.sumBy { it.size.toInt() }.toLong()
+                    var directorySize = 0L
+
+                    fileItems.value.forEach { directorySize += it.size }
 
                     log.debug("- directory size: $directorySize")
 
