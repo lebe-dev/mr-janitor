@@ -24,6 +24,7 @@ class CheckIfDirectoryItemValid(
 
         log.info(LOG_ROW_SEPARATOR)
         log.info(" CHECK PATH '${directoryItem.path}'")
+        log.info(LOG_ROW_SEPARATOR)
         log.trace(directoryItem.toString())
 
         log.debug("directory validation config:")
@@ -121,10 +122,10 @@ class CheckIfDirectoryItemValid(
                     result = true
 
                 } else {
-                    log.info("validation error - there are no file items in directory")
+                    log.error("validation error - there are no file items in directory")
                 }
 
-            } else { log.info("validation error - directory size equals 0") }
+            } else { log.error("validation error - directory size equals 0") }
 
         } else { log.error("validation error - path doesn't exist") }
 
