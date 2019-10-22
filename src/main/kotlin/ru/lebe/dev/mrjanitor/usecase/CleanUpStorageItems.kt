@@ -37,12 +37,7 @@ class CleanUpStorageItems {
 
     private fun deleteDirectory(path: Path) {
         if (path.toFile().deleteRecursively()) {
-            if (path.toFile().delete()) {
-                log.info("- deleted: '$path'")
-
-            } else {
-                log.error("unable to delete directory")
-            }
+            log.info("- path '$path' has been deleted")
 
         } else {
             log.error("unable to delete item path")
