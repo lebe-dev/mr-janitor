@@ -10,20 +10,34 @@ class CleanUpStorageItems {
 
     fun cleanUp(items: List<StorageItem>): Try<Unit> = Try {
         log.info("cleanup storage items (${items.size})")
-        items.forEach { log.info("- '${it.name}'") }
+
+        var hasErrors = false
 
         items.forEach { item ->
             log.info("- remove item '${item.path}'..")
 
             if (item.path.toFile().isDirectory) {
-                deleteDirectory(item.path)
+                val directoryDeleted = deleteDirectory(item.path)
+
+                if (directoryDeleted) {
+                    log.info("+ directory has been deleted")
+
+                } else {
+                    log.error("[!] unable to delete directory")
+                    hasErrors = true
+                }
 
             } else {
                 deleteFile(item.path)
             }
         }
 
-        log.info("all items have been removed")
+        if (!hasErrors) {
+            log.info("all items have been removed")
+
+        } else {
+            log.error("cleanup has errors, check log for details")
+        }
     }
 
     private fun deleteFile(path: Path) {
@@ -35,12 +49,17 @@ class CleanUpStorageItems {
         }
     }
 
-    private fun deleteDirectory(path: Path) {
+    private fun deleteDirectory(path: Path): Boolean {
+        var result = false
+
         if (path.toFile().deleteRecursively()) {
             log.info("- path '$path' has been deleted")
+            result = true
 
         } else {
             log.error("unable to delete item path")
         }
+
+        return result
     }
 }
