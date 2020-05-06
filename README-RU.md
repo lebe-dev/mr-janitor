@@ -48,11 +48,28 @@ useradd -d /opt/janitor janitor && chown -R janitor: /opt/janitor
 setfacl -Rm u:janitor:rwx /backups
 ```
 
-**4. Добавляем задачу запуска Janitor в cron**
+**4. Создаем скрипт запуска Janitor**
+
+По пути `/opt/janitor/janitor.sh`:
+
+```bash
+#!/bin/bash
+
+cd /opt/janitor
+java -jar janitor.jar cleanup
+```
+
+Даем право на запуск:
+
+```shell script
+chmod +x /opt/janitor/janitor.sh
+```
+
+**5. Добавляем задачу запуска Janitor в cron**
 
 ```
 # backups cleanup by janitor
-0 19  *  *  *  java -jar /opt/janitor/janitor.jar cleanup
+0 19  *  *  *  java -jar /opt/janitor/janitor.sh
 ```
 
 Перезапускаем `crond`.
