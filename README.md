@@ -50,7 +50,24 @@ useradd -d /opt/janitor janitor && chown -R janitor: /opt/janitor
 setfacl -Rm u:janitor:rwx /backups
 ```
 
-**4. Add task to cron schedule**
+**4. Create startup script for Janitor**
+
+Create file `/opt/janitor/janitor.sh` with content:
+
+```bash
+#!/bin/bash
+
+cd /opt/janitor
+java -jar janitor.jar cleanup
+```
+
+Add execution permission:
+
+```shell script
+chmod +x /opt/janitor/janitor.sh
+```
+
+**5. Add task to cron schedule**
 
 ```
 # backups cleanup by janitor
