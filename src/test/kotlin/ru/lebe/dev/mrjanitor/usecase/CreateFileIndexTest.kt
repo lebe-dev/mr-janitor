@@ -232,21 +232,14 @@ internal class CreateFileIndexTest {
 
         val profile = profile.copy(fileNameFilter = Regex(fileNameFilter))
 
-        val results = useCase.create(profile)
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(2, results.directoryItems.size)
 
-        assertTrue(results.isRight())
+            val firstDirectoryItem = results.directoryItems.first()
+            assertEquals(1, firstDirectoryItem.fileItems.size)
 
-        when(results) {
-            is Either.Right -> {
-                assertEquals(2, results.b.directoryItems.size)
-
-                val firstDirectoryItem = results.b.directoryItems.first()
-                assertEquals(1, firstDirectoryItem.fileItems.size)
-
-                val secondDirectoryItem = results.b.directoryItems.last()
-                assertEquals(2, secondDirectoryItem.fileItems.size)
-            }
-            is Either.Left -> throw Exception("assertion error")
+            val secondDirectoryItem = results.directoryItems.last()
+            assertEquals(2, secondDirectoryItem.fileItems.size)
         }
     }
 
