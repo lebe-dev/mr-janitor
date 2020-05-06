@@ -9,14 +9,14 @@ Deal with outdated files in a smart way.
 1. Cleanup outdated files
 
 2. Support two file object types:
- - Directory
- - File
+    - Directory
+    - File
 
 3. Data validation  
- - Size comparison
- - Md5 Check
- - Zip test
- - Custom command
+    - Size comparison
+    - Md5 Check
+    - Zip test
+    - Custom command
 
 4.Configurable cleanup policy
 
