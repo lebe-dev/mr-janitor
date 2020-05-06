@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
-import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
+import ru.lebe.dev.mrjanitor.util.assertErrorResult
 import ru.lebe.dev.mrjanitor.util.assertRightResult
 import ru.lebe.dev.mrjanitor.util.getRandomText
 import java.io.File
@@ -154,14 +154,7 @@ internal class CreateFileIndexTest {
     fun `Return error if path doesn't exist`() {
         val profile = profile.copy(path = File(getRandomText()).toPath().toString())
 
-        val result = useCase.create(profile)
-
-        assertTrue(result.isLeft())
-
-        when(result) {
-            is Either.Left -> assertEquals(OperationError.ERROR, result.a)
-            is Either.Right -> throw Exception("assert error")
-        }
+        assertErrorResult(useCase.create(profile))
     }
 
     @Test
@@ -170,17 +163,11 @@ internal class CreateFileIndexTest {
 
         val profile = profile.copy(path = directory.toString(), storageUnit = StorageUnit.FILE)
 
-        val results = useCase.create(profile)
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                assertEquals(directory, results.b.path)
-                assertEquals(StorageUnit.FILE, results.b.storageUnit)
-                assertTrue(results.b.directoryItems.isEmpty())
-                assertTrue(results.b.fileItems.isEmpty())
-            }
-            is Either.Left -> throw Exception("asser exception")
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(directory, results.path)
+            assertEquals(StorageUnit.FILE, results.storageUnit)
+            assertTrue(results.directoryItems.isEmpty())
+            assertTrue(results.fileItems.isEmpty())
         }
     }
 

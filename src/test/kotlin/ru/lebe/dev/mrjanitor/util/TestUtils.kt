@@ -18,7 +18,7 @@ fun <E> assertRightResult(result: OperationResult<E>, body: (E) -> Unit) {
     }
 }
 
-fun <E> assertErrorResult(result: OperationResult<E>, operationError: OperationError) {
+fun <E> assertErrorResult(result: OperationResult<E>, operationError: OperationError = OperationError.ERROR) {
     assertTrue(result.isLeft())
 
     when(result) {
