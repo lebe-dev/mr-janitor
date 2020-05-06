@@ -8,7 +8,7 @@ Deal with outdated files in a smart way.
 
 1. Cleanup outdated files
 
-2. Support two file object types:
+2. Support two file-object types:
     - Directory
     - File
 
