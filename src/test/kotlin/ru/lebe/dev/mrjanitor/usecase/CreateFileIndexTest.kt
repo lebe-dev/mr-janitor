@@ -115,45 +115,38 @@ internal class CreateFileIndexTest {
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
-        val results = useCase.create(profile)
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(StorageUnit.DIRECTORY, results.storageUnit)
+            assertEquals(2, results.directoryItems.size)
+            assertTrue(results.fileItems.isEmpty())
 
-        assertTrue(results.isRight())
+            val firstDirectory = results.directoryItems.first()
+            assertEquals(firstSubDirectory.toFile().name, firstDirectory.name)
+            assertEquals(1, firstDirectory.fileItems.size)
+            assertEquals(firstFile.length(), firstDirectory.size)
 
-        when(results) {
-            is Either.Right -> {
-                assertEquals(StorageUnit.DIRECTORY, results.b.storageUnit)
-                assertEquals(2, results.b.directoryItems.size)
-                assertTrue(results.b.fileItems.isEmpty())
+            val firstDirectoryFileItem = firstDirectory.fileItems.first()
+            assertEquals(
+                Paths.get(firstSubDirectory.toString(), firstFile.name).toString(),
+                firstDirectoryFileItem.path.toString()
+            )
+            assertEquals(firstFile.name, firstDirectoryFileItem.name)
+            assertEquals(firstFile.length(), firstDirectoryFileItem.size)
+            assertEquals(firstFileHash, firstDirectoryFileItem.hash)
 
-                val firstDirectory = results.b.directoryItems.first()
-                assertEquals(firstSubDirectory.toFile().name, firstDirectory.name)
-                assertEquals(1, firstDirectory.fileItems.size)
-                assertEquals(firstFile.length(), firstDirectory.size)
+            val secondDirectory = results.directoryItems.last()
+            assertEquals(secondSubDirectory.toFile().name, secondDirectory.name)
+            assertEquals(1, secondDirectory.fileItems.size)
+            assertEquals(secondFile.length(), secondDirectory.size)
 
-                val firstDirectoryFileItem = firstDirectory.fileItems.first()
-                assertEquals(
-                    Paths.get(firstSubDirectory.toString(), firstFile.name).toString(),
-                    firstDirectoryFileItem.path.toString()
-                )
-                assertEquals(firstFile.name, firstDirectoryFileItem.name)
-                assertEquals(firstFile.length(), firstDirectoryFileItem.size)
-                assertEquals(firstFileHash, firstDirectoryFileItem.hash)
-
-                val secondDirectory = results.b.directoryItems.last()
-                assertEquals(secondSubDirectory.toFile().name, secondDirectory.name)
-                assertEquals(1, secondDirectory.fileItems.size)
-                assertEquals(secondFile.length(), secondDirectory.size)
-
-                val secondDirectoryFileItem = secondDirectory.fileItems.first()
-                assertEquals(
-                    Paths.get(secondSubDirectory.toString(), secondFile.name).toString(),
-                    secondDirectoryFileItem.path.toString()
-                )
-                assertEquals(secondFile.name, secondDirectoryFileItem.name)
-                assertEquals(secondFile.length(), secondDirectoryFileItem.size)
-                assertEquals(secondFileHash, secondDirectoryFileItem.hash)
-            }
-            is Either.Left -> throw Exception("assertion error")
+            val secondDirectoryFileItem = secondDirectory.fileItems.first()
+            assertEquals(
+                Paths.get(secondSubDirectory.toString(), secondFile.name).toString(),
+                secondDirectoryFileItem.path.toString()
+            )
+            assertEquals(secondFile.name, secondDirectoryFileItem.name)
+            assertEquals(secondFile.length(), secondDirectoryFileItem.size)
+            assertEquals(secondFileHash, secondDirectoryFileItem.hash)
         }
     }
 
