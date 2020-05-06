@@ -98,9 +98,9 @@ items total: 3
 
 ## Basic configuration
 
-### 1. How much items to keep
+### 1. How many items to keep
 
-You can define in any profile how much items to keep. How to do it:
+You can define in any profile how many items to keep. How to do it:
 
 ```
 someProfile {
