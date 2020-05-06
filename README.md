@@ -71,7 +71,7 @@ chmod +x /opt/janitor/janitor.sh
 
 ```
 # backups cleanup by janitor
-0 19  *  *  *  janitor java -jar /opt/janitor/janitor.jar cleanup
+0 19  *  *  *  janitor java -jar /opt/janitor/janitor.sh
 ```
 
 Restart `crond`.
