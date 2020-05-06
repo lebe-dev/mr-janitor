@@ -17,7 +17,8 @@ import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.Defaults
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
-import ru.lebe.dev.mrjanitor.util.getRandomFileData
+import ru.lebe.dev.mrjanitor.util.assertRightResult
+import ru.lebe.dev.mrjanitor.util.getRandomText
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -68,40 +69,33 @@ internal class CreateFileIndexTest {
 
     @Test
     fun `Path index with file storage unit should return file items`() {
-        val firstFileData = getRandomFileData()
+        val firstFileData = getRandomText()
         val firstFile = Paths.get(indexPath.toString(), "bucks.jpg").toFile().apply { writeText(firstFileData) }
         val firstFileHash = DigestUtils.md5Hex(firstFile.readBytes())
 
-        val secondFileData = getRandomFileData()
+        val secondFileData = getRandomText()
         val secondFile = Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
         val profile = profile.copy(storageUnit = StorageUnit.FILE)
 
-        val results = useCase.create(profile)
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(indexPath, results.path)
+            assertEquals(StorageUnit.FILE, results.storageUnit)
+            assertEquals(2, results.fileItems.size)
+            assertTrue(results.directoryItems.isEmpty())
 
-        assertTrue(results.isRight())
+            val firstItem = results.fileItems.first()
+            assertEquals(Paths.get(indexPath.toString(), firstItem.name).toString(), firstItem.path.toString())
+            assertEquals(firstFile.name, firstItem.name)
+            assertEquals(firstFile.length(), firstItem.size)
+            assertEquals(firstFileHash, firstItem.hash)
 
-        when(results) {
-            is Either.Right -> {
-                assertEquals(indexPath, results.b.path)
-                assertEquals(StorageUnit.FILE, results.b.storageUnit)
-                assertEquals(2, results.b.fileItems.size)
-                assertTrue(results.b.directoryItems.isEmpty())
-
-                val firstItem = results.b.fileItems.first()
-                assertEquals(Paths.get(indexPath.toString(), firstItem.name).toString(), firstItem.path.toString())
-                assertEquals(firstFile.name, firstItem.name)
-                assertEquals(firstFile.length(), firstItem.size)
-                assertEquals(firstFileHash, firstItem.hash)
-
-                val secondItem = results.b.fileItems.last()
-                assertEquals(Paths.get(indexPath.toString(), secondItem.name).toString(), secondItem.path.toString())
-                assertEquals(secondItem.name, secondFile.name)
-                assertEquals(secondFile.length(), secondItem.size)
-                assertEquals(secondFileHash, secondItem.hash)
-            }
-            is Either.Left -> throw Exception("assertion error")
+            val secondItem = results.fileItems.last()
+            assertEquals(Paths.get(indexPath.toString(), secondItem.name).toString(), secondItem.path.toString())
+            assertEquals(secondItem.name, secondFile.name)
+            assertEquals(secondFile.length(), secondItem.size)
+            assertEquals(secondFileHash, secondItem.hash)
         }
     }
 
@@ -109,14 +103,14 @@ internal class CreateFileIndexTest {
     fun `Path index with directory storage unit should return directory and file items`() {
         val firstSubDirectory = Paths.get(indexPath.toString(), "2019-07-16").apply { toFile().mkdir() }
 
-        val firstFileData = getRandomFileData()
+        val firstFileData = getRandomText()
         val firstFile = Paths.get(firstSubDirectory.toString(), "richard.jpg")
                              .toFile().apply { writeText(firstFileData) }
         val firstFileHash = DigestUtils.md5Hex(firstFile.readBytes())
 
         val secondSubDirectory = Paths.get(indexPath.toString(), "2019-07-17")
                                       .apply { toFile().mkdir() }
-        val secondFileData = getRandomFileData()
+        val secondFileData = getRandomText()
         val secondFile = Paths.get(secondSubDirectory.toString(), "bernard.jpg").toFile()
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
@@ -233,8 +227,8 @@ internal class CreateFileIndexTest {
             indexPath, UUID.randomUUID().toString()
         )
 
-        Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomFileData()) }
-        Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomFileData()) }
+        Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomText()) }
 
         val profile = profile.copy(storageUnit = StorageUnit.FILE, fileNameFilter = Regex(fileNameFilter))
 
@@ -266,7 +260,7 @@ internal class CreateFileIndexTest {
             getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
             getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
 
-            Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomFileData()) }
+            Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomText()) }
         }
 
         val profile = profile.copy(fileNameFilter = Regex(fileNameFilter))
@@ -313,8 +307,8 @@ internal class CreateFileIndexTest {
 
     @Test
     fun `File item - Hash property should be blank if md5 check disabled for file validation`() {
-        Paths.get(indexPath.toString(), "dude.jpg").toFile().apply { writeText(getRandomFileData()) }
-        Paths.get(indexPath.toString(), "hugue.bmp").toFile().apply { writeText(getRandomFileData()) }
+        Paths.get(indexPath.toString(), "dude.jpg").toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), "hugue.bmp").toFile().apply { writeText(getRandomText()) }
 
         val profile = profile.copy(
             storageUnit = StorageUnit.FILE,
@@ -340,8 +334,8 @@ internal class CreateFileIndexTest {
                 directory, UUID.randomUUID().toString()
             )
 
-            Paths.get(directory.toString(), "mario.jpg").toFile().apply { writeText(getRandomFileData()) }
-            Paths.get(directory.toString(), "kalvin.bmp").toFile().apply { writeText(getRandomFileData()) }
+            Paths.get(directory.toString(), "mario.jpg").toFile().apply { writeText(getRandomText()) }
+            Paths.get(directory.toString(), "kalvin.bmp").toFile().apply { writeText(getRandomText()) }
         }
     }
 }

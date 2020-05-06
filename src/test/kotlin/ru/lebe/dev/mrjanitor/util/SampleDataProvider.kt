@@ -28,7 +28,7 @@ object SampleDataProvider {
     fun getSampleFileWithCompanions(path: Path, fileName: String,
                                     hash: String = "", data: String = ""): Triple<File, File, File> {
 
-        val content = if (data.isBlank()) { getRandomFileData() } else { data }
+        val content = if (data.isBlank()) { getRandomText() } else { data }
 
         val resultFile = Paths.get(path.toString(), fileName).toFile().apply { writeText(content) }
 
@@ -43,7 +43,7 @@ object SampleDataProvider {
             sourceFile.inputStream().use { DigestUtils.md5Hex(it) }
 
         } else {
-            getRandomFileData()
+            getRandomText()
         }
 
         return Paths.get(path.toString(), "${sourceFile.name}.md5").toFile().apply { writeText(hashValue) }
@@ -51,7 +51,7 @@ object SampleDataProvider {
 
     fun createLogCompanionFile(path: Path, sourceFile: File) =
         Paths.get(path.toString(), "${sourceFile.name}.log").toFile()
-            .apply { writeText(getRandomFileData()) }
+            .apply { writeText(getRandomText()) }
 
     fun getFileItem(sampleFile: File, hash: String = UUID.randomUUID().toString()) =
         FileItem(
@@ -76,7 +76,7 @@ object SampleDataProvider {
 
         for (index in 1..amount) {
             val (file, hashFile, _) = getSampleArchiveFileWithCompanions(path, getRandomTimeBasedFileName())
-            hashFile.writeText(getRandomFileData())
+            hashFile.writeText(getRandomText())
             results += file
         }
 

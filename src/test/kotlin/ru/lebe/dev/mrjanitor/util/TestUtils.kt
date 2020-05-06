@@ -27,6 +27,6 @@ fun <E> assertErrorResult(result: OperationResult<E>, operationError: OperationE
     }
 }
 
-fun getRandomFileData() = UUID.randomUUID().toString()
+fun getRandomText() = UUID.randomUUID().toString()
 
 fun getDateFromString(dateStr: String): Date = SimpleDateFormat("yyyy-MM-dd").parse(dateStr)

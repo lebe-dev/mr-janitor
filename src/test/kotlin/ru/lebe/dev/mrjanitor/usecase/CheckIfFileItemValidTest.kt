@@ -14,7 +14,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createLogCompanionFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createMd5CompanionFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getFileItem
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.getSampleArchiveFileWithCompanions
-import ru.lebe.dev.mrjanitor.util.getRandomFileData
+import ru.lebe.dev.mrjanitor.util.getRandomText
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -48,7 +48,7 @@ internal class CheckIfFileItemValidTest {
 
     @BeforeEach
     fun setUp() {
-        randomFileContent = getRandomFileData()
+        randomFileContent = getRandomText()
 
         indexPath = Files.createTempDirectory("")
 
@@ -190,7 +190,7 @@ internal class CheckIfFileItemValidTest {
         logFile.delete()
 
         Paths.get(archiveFile.parent, "${archiveFile.nameWithoutExtension}.log").toFile()
-             .apply { writeText(getRandomFileData()) }
+             .apply { writeText(getRandomText()) }
 
         assertTrue(useCase.isValid(fileItem, None, validationConfig))
     }
@@ -238,7 +238,7 @@ internal class CheckIfFileItemValidTest {
 
         Paths.get("${archiveFile.absoluteFile.toPath()}.md5").apply { toFile().writeText(md5Hash) }
         Paths.get("${archiveFile.absoluteFile.toPath()}.log")
-             .apply { toFile().writeText(getRandomFileData()) }
+             .apply { toFile().writeText(getRandomText()) }
 
         val previousFileItem = getFileItem(previousArchiveFile, previousHashFile.readText())
         val fileItem = getFileItem(archiveFile, md5Hash)
