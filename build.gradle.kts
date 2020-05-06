@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.72"
     id("io.gitlab.arturbosch.detekt") version "1.0.1"
     id("com.github.johnrengelman.shadow") version "5.1.0"
 }
