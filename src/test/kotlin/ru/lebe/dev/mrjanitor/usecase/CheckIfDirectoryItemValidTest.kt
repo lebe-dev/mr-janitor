@@ -1,6 +1,5 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Either
 import arrow.core.None
 import arrow.core.Some
 import org.junit.jupiter.api.AfterEach
@@ -165,29 +164,22 @@ internal class CheckIfDirectoryItemValidTest {
             fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
-        val pathIndex = createFileIndex.create(profile)
+        assertRightResult(createFileIndex.create(profile)) { pathIndex ->
+            val directoryItem = DirectoryItem(
+                path = directory.toPath(),
+                name = directoryName,
+                size = dirTotalSize.toLong(),
+                fileItems = pathIndex.directoryItems.last().fileItems,
+                valid = true
+            )
 
-        assertTrue(pathIndex.isRight())
-
-        when(pathIndex) {
-            is Either.Right -> {
-                val directoryItem = DirectoryItem(
-                    path = directory.toPath(),
-                    name = directoryName,
-                    size = dirTotalSize.toLong(),
-                    fileItems = pathIndex.b.directoryItems.last().fileItems,
-                    valid = true
+            assertFalse(
+                useCase.isValid(
+                    directoryItem, None,
+                    directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = false),
+                    fileItemValidationConfig
                 )
-
-                assertFalse(
-                    useCase.isValid(
-                        directoryItem, None,
-                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = false),
-                        fileItemValidationConfig
-                    )
-                )
-            }
-            is Either.Left -> throw Exception("assert error")
+            )
         }
     }
 
@@ -217,12 +209,12 @@ internal class CheckIfDirectoryItemValidTest {
         }
 
         val profile = Profile(
-                name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
-                fileNameFilter = Regex(".*\\.zip$"),
-                directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepItemsQuantity = 3,
-                directoryItemValidationConfig = directoryValidationConfig,
-                cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
-                fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
+            name = "default", path = indexPath.toString(), storageUnit = StorageUnit.DIRECTORY,
+            fileNameFilter = Regex(".*\\.zip$"),
+            directoryNameFilter = Regex(Defaults.FILENAME_FILTER_PATTERN), keepItemsQuantity = 3,
+            directoryItemValidationConfig = directoryValidationConfig,
+            cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false),
+            fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
         assertRightResult(createFileIndex.create(profile)) { pathIndex ->
@@ -276,34 +268,29 @@ internal class CheckIfDirectoryItemValidTest {
             cleanAction = CleanAction.JUST_NOTIFY
         )
 
-        val pathIndex = createFileIndex.create(profile)
+        assertRightResult(createFileIndex.create(profile)) { pathIndex ->
+            val directoryItem = DirectoryItem(
+                path = directory.toPath(),
+                name = directoryName,
+                size = dirTotalSize.toLong(),
+                fileItems = pathIndex.directoryItems.last().fileItems,
+                valid = true
+            )
 
-        assertTrue(pathIndex.isRight())
-
-        when(pathIndex) {
-            is Either.Right -> {
-                val directoryItem = DirectoryItem(
-                    path = directory.toPath(),
-                    name = directoryName,
-                    size = dirTotalSize.toLong(),
-                    fileItems = pathIndex.b.directoryItems.last().fileItems,
-                    valid = true
+            assertFalse(
+                useCase.isValid(
+                    directoryItem, None,
+                    directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
+                    fileItemValidationConfig
                 )
-
-                assertFalse(
-                    useCase.isValid(
-                        directoryItem, None,
-                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
-                        fileItemValidationConfig
-                    )
-                )
-            }
-            is Either.Left -> throw Exception("assert error")
+            )
         }
     }
 
-    private fun getPreviousItem(path: Path = indexPath, size: Long = 12345L,
-                                fileItems: List<FileItem> = listOf()) = DirectoryItem(
+    private fun getPreviousItem(
+        path: Path = indexPath, size: Long = 12345L,
+        fileItems: List<FileItem> = listOf()
+    ) = DirectoryItem(
         path = path,
         name = "whatever",
         size = size,
