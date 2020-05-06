@@ -1,6 +1,5 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Either
 import org.apache.commons.codec.digest.DigestUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -249,42 +248,28 @@ internal class CreateFileIndexTest {
 
         val profile = profile.copy(fileItemValidationConfig = fileItemValidationConfig.copy(md5FileCheck = false))
 
-        val results = useCase.create(profile)
-
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                assertTrue(results.b.directoryItems.isNotEmpty())
-                results.b.directoryItems.forEach { directoryItem ->
-                    assertTrue(directoryItem.fileItems.isNotEmpty())
-                    assertTrue(directoryItem.fileItems.all { it.hash.isBlank() })
-                }
+        assertRightResult(useCase.create(profile)) { results ->
+            assertTrue(results.directoryItems.isNotEmpty())
+            results.directoryItems.forEach { directoryItem ->
+                assertTrue(directoryItem.fileItems.isNotEmpty())
+                assertTrue(directoryItem.fileItems.all { it.hash.isBlank() })
             }
-            is Either.Left -> throw Exception("assertion error")
         }
     }
 
     @Test
     fun `File item - Hash property should be blank if md5 check disabled for file validation`() {
-        Paths.get(indexPath.toString(), "dude.jpg").toFile().apply { writeText(getRandomText()) }
-        Paths.get(indexPath.toString(), "hugue.bmp").toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
 
         val profile = profile.copy(
             storageUnit = StorageUnit.FILE,
             fileItemValidationConfig = fileItemValidationConfig.copy(md5FileCheck = false)
         )
 
-        val results = useCase.create(profile)
-
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                assertTrue(results.b.fileItems.isNotEmpty())
-                assertTrue(results.b.fileItems.all { it.hash.isBlank() })
-            }
-            is Either.Left -> throw Exception("assertion error")
+        assertRightResult(useCase.create(profile)) { results ->
+            assertTrue(results.fileItems.isNotEmpty())
+            assertTrue(results.fileItems.all { it.hash.isBlank() })
         }
     }
 
@@ -294,8 +279,8 @@ internal class CreateFileIndexTest {
                 directory, UUID.randomUUID().toString()
             )
 
-            Paths.get(directory.toString(), "mario.jpg").toFile().apply { writeText(getRandomText()) }
-            Paths.get(directory.toString(), "kalvin.bmp").toFile().apply { writeText(getRandomText()) }
+            Paths.get(directory.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
+            Paths.get(directory.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
         }
     }
 }
