@@ -7,6 +7,7 @@ import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.io.File
 
 class ReadConfigFromFileTest: StringSpec({
@@ -18,70 +19,64 @@ class ReadConfigFromFileTest: StringSpec({
     val validConfigFile = getResourceFile("valid.conf")
 
     "Read method should return app config" {
-        val result = useCase.read(validConfigFile)
-        result.isRight() shouldBe true
+        assertRightResult(useCase.read(validConfigFile)) { result ->
+            result.profiles.size shouldBe 2
 
-        when (result) {
-            is Either.Right -> {
-                result.b.profiles.size shouldBe 2
+            val firstProfile = result.profiles.first()
 
-                val firstProfile = result.b.profiles.first()
+            firstProfile.name shouldBe "mysite"
+            firstProfile.path shouldBe "."
+            firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+            firstProfile.fileNameFilter.pattern shouldBe ".*\\.ZIP$"
+            firstProfile.directoryNameFilter.pattern shouldBe "\\d{10}-\\d{2}"
+            firstProfile.keepItemsQuantity shouldBe 31
+            firstProfile.cleanAction shouldBe CleanAction.REMOVE
 
-                firstProfile.name shouldBe "mysite"
-                firstProfile.path shouldBe "."
-                firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
-                firstProfile.fileNameFilter.pattern shouldBe ".*\\.ZIP$"
-                firstProfile.directoryNameFilter.pattern shouldBe "\\d{10}-\\d{2}"
-                firstProfile.keepItemsQuantity shouldBe 31
-                firstProfile.cleanAction shouldBe CleanAction.REMOVE
+            val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
+            fileItemValidationConfig1.sizeAtLeastAsPrevious shouldBe true
+            fileItemValidationConfig1.md5FileCheck shouldBe true
+            fileItemValidationConfig1.zipTest shouldBe false
+            fileItemValidationConfig1.logFileExists shouldBe false
+            fileItemValidationConfig1.useCustomValidator shouldBe true
+            fileItemValidationConfig1.customValidatorCommand shouldBe "zip -t \${filename}"
 
-                val fileItemValidationConfig1 = firstProfile.fileItemValidationConfig
-                fileItemValidationConfig1.sizeAtLeastAsPrevious shouldBe true
-                fileItemValidationConfig1.md5FileCheck shouldBe true
-                fileItemValidationConfig1.zipTest shouldBe false
-                fileItemValidationConfig1.logFileExists shouldBe false
-                fileItemValidationConfig1.useCustomValidator shouldBe true
-                fileItemValidationConfig1.customValidatorCommand shouldBe "zip -t \${filename}"
+            firstProfile.directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
 
-                firstProfile.directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+            val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
+            directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+            directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
+            directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe false
 
-                val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
-                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
-                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe false
+            firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe false
+            firstProfile.cleanUpPolicy.allInvalidItems shouldBe false
 
-                firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe false
-                firstProfile.cleanUpPolicy.allInvalidItems shouldBe false
+            //
 
-                //
+            val lastProfile = result.profiles.last()
 
-                val lastProfile = result.b.profiles.last()
+            lastProfile.name shouldBe "nginx-logs"
+            lastProfile.path shouldBe "."
+            lastProfile.storageUnit shouldBe StorageUnit.FILE
+            lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
+            lastProfile.directoryNameFilter.pattern shouldBe "\\d{4}"
+            lastProfile.keepItemsQuantity shouldBe 14
+            lastProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
 
-                lastProfile.name shouldBe "nginx-logs"
-                lastProfile.path shouldBe "."
-                lastProfile.storageUnit shouldBe StorageUnit.FILE
-                lastProfile.fileNameFilter.pattern shouldBe ".*\\.sql$"
-                lastProfile.directoryNameFilter.pattern shouldBe "\\d{4}"
-                lastProfile.keepItemsQuantity shouldBe 14
-                lastProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+            val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
+            fileItemValidationConfig2.sizeAtLeastAsPrevious shouldBe false
+            fileItemValidationConfig2.md5FileCheck shouldBe true
+            fileItemValidationConfig2.zipTest shouldBe true
+            fileItemValidationConfig2.logFileExists shouldBe false
+            fileItemValidationConfig2.useCustomValidator shouldBe false
+            fileItemValidationConfig2.customValidatorCommand shouldBe "gzip -t \${filename}"
 
-                val fileItemValidationConfig2 = lastProfile.fileItemValidationConfig
-                fileItemValidationConfig2.sizeAtLeastAsPrevious shouldBe false
-                fileItemValidationConfig2.md5FileCheck shouldBe true
-                fileItemValidationConfig2.zipTest shouldBe true
-                fileItemValidationConfig2.logFileExists shouldBe false
-                fileItemValidationConfig2.useCustomValidator shouldBe false
-                fileItemValidationConfig2.customValidatorCommand shouldBe "gzip -t \${filename}"
+            val directoryItemValidationConfig2 = lastProfile.directoryItemValidationConfig
+            directoryItemValidationConfig2.filesQtyAtLeastAsInPrevious shouldBe false
+            directoryItemValidationConfig2.sizeAtLeastAsPrevious shouldBe true
+            directoryItemValidationConfig2.fileSizeAtLeastAsInPrevious shouldBe true
 
-                val directoryItemValidationConfig2 = lastProfile.directoryItemValidationConfig
-                directoryItemValidationConfig2.filesQtyAtLeastAsInPrevious shouldBe false
-                directoryItemValidationConfig2.sizeAtLeastAsPrevious shouldBe true
-                directoryItemValidationConfig2.fileSizeAtLeastAsInPrevious shouldBe true
-
-                lastProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
-                lastProfile.cleanUpPolicy.allInvalidItems shouldBe true
-            }
-            is Either.Left -> throw Exception("assert error")
+            lastProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
+            lastProfile.cleanUpPolicy.allInvalidItems shouldBe true
         }
     }
 
