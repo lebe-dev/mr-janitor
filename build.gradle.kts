@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.3.72"
-    id("io.gitlab.arturbosch.detekt") version "1.0.1"
+    id("io.gitlab.arturbosch.detekt") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
@@ -53,8 +53,6 @@ val test by tasks.getting(Test::class) {
 }
 
 detekt {
-    toolVersion = "1.0.1"
-
     input = project.files("src/main/kotlin")
 
     config = files("detekt.yml")
