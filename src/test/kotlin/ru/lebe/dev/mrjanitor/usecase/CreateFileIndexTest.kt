@@ -185,17 +185,11 @@ internal class CreateFileIndexTest {
             fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
-        val results = useCase.create(profile)
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                assertEquals(directory, results.b.path)
-                assertEquals(StorageUnit.DIRECTORY, results.b.storageUnit)
-                assertTrue(results.b.directoryItems.isEmpty())
-                assertTrue(results.b.fileItems.isEmpty())
-            }
-            is Either.Left -> throw Exception("asser exception")
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(directory, results.path)
+            assertEquals(StorageUnit.DIRECTORY, results.storageUnit)
+            assertTrue(results.directoryItems.isEmpty())
+            assertTrue(results.fileItems.isEmpty())
         }
     }
 
