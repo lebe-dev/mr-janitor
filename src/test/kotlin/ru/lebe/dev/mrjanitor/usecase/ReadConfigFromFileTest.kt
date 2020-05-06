@@ -1,12 +1,11 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Either
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 import ru.lebe.dev.mrjanitor.domain.CleanAction
-import ru.lebe.dev.mrjanitor.domain.OperationError
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.util.Defaults
+import ru.lebe.dev.mrjanitor.util.assertErrorResult
 import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.io.File
 
@@ -81,90 +80,72 @@ class ReadConfigFromFileTest: StringSpec({
     }
 
     "Return failure if config file doesn't exist" {
-        useCase.read(File("unknown-file")) shouldBe Either.left(OperationError.ERROR)
+        assertErrorResult(useCase.read(File("unknown-file")))
     }
 
     "Return failure if at least one profile is absent" {
         val configFile = getResourceFile("missing-specified-profile.conf")
-        useCase.read(configFile).isLeft() shouldBe true
+        assertErrorResult(useCase.read(configFile))
     }
 
     "App config should contain complete default profile" {
-        val result = useCase.read(validConfigFile)
+        assertRightResult(useCase.read(validConfigFile)) { result ->
+            result.defaultProfile.name shouldBe Defaults.PROFILE_NAME
+            result.defaultProfile.path.isBlank() shouldBe true
+            result.defaultProfile.keepItemsQuantity shouldBe 7
+            result.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
 
-        result.isRight() shouldBe true
+            val directoryItemValidationConfig = result.defaultProfile.directoryItemValidationConfig
+            directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+            directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
+            directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
 
-        when (result) {
-            is Either.Right -> {
-                result.b.defaultProfile.name shouldBe Defaults.PROFILE_NAME
-                result.b.defaultProfile.path.isBlank() shouldBe true
-                result.b.defaultProfile.keepItemsQuantity shouldBe 7
-                result.b.defaultProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+            val fileItemValidationConfig = result.defaultProfile.fileItemValidationConfig
+            fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
+            fileItemValidationConfig.md5FileCheck shouldBe true
+            fileItemValidationConfig.logFileExists shouldBe true
+            fileItemValidationConfig.zipTest shouldBe true
 
-                val directoryItemValidationConfig = result.b.defaultProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
-                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
-                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
+            val cleanUpPolicy = result.defaultProfile.cleanUpPolicy
 
-                val fileItemValidationConfig = result.b.defaultProfile.fileItemValidationConfig
-                fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe true
-                fileItemValidationConfig.md5FileCheck shouldBe true
-                fileItemValidationConfig.logFileExists shouldBe true
-                fileItemValidationConfig.zipTest shouldBe true
-
-                val cleanUpPolicy = result.b.defaultProfile.cleanUpPolicy
-
-                cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
-                cleanUpPolicy.allInvalidItems shouldBe false
-            }
-            is Either.Left -> throw Exception("assert error")
+            cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
+            cleanUpPolicy.allInvalidItems shouldBe false
         }
     }
 
     "Skip profile if path doesn't exist" {
         val configFile = getResourceFile("profile-path-does-not-exist.conf")
-        val result = useCase.read(configFile)
-
-        result.isRight() shouldBe true
-
-        when (result) {
-            is Either.Right -> result.b.profiles.size shouldBe 1
-            is Either.Left -> throw Exception("assert error")
+        assertRightResult(useCase.read(configFile)) {
+            it.profiles.size shouldBe 1
         }
     }
 
     "Missing profile properties should be fulfilled from defaults" {
         val configFile = getResourceFile("fulfill-from-defaults.conf")
-        val result = useCase.read(configFile)
 
-        result.isRight() shouldBe true
+        assertRightResult(useCase.read(configFile)) { result ->
+            val firstProfile = result.profiles.first()
+            firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
+            firstProfile.keepItemsQuantity shouldBe 7
+            firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
+            firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
+            firstProfile.directoryNameFilter.pattern shouldBe "\\d{3}-\\d{6}"
 
-        when (result) {
-            is Either.Right -> {
-                val firstProfile = result.b.profiles.first()
-                firstProfile.storageUnit shouldBe StorageUnit.DIRECTORY
-                firstProfile.keepItemsQuantity shouldBe 7
-                firstProfile.cleanAction shouldBe CleanAction.JUST_NOTIFY
-                firstProfile.fileNameFilter.pattern shouldBe ".*\\.tar.gz$"
-                firstProfile.directoryNameFilter.pattern shouldBe "\\d{3}-\\d{6}"
+            val fileItemValidationConfig = firstProfile.fileItemValidationConfig
+            fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
+            fileItemValidationConfig.md5FileCheck shouldBe true
+            fileItemValidationConfig.zipTest shouldBe true
+            fileItemValidationConfig.logFileExists shouldBe false
+            fileItemValidationConfig.useCustomValidator shouldBe true
+            fileItemValidationConfig.customValidatorCommand shouldBe "blablabla \${filename}"
 
-                val fileItemValidationConfig = firstProfile.fileItemValidationConfig
-                fileItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
-                fileItemValidationConfig.md5FileCheck shouldBe true
-                fileItemValidationConfig.zipTest shouldBe true
-                fileItemValidationConfig.logFileExists shouldBe false
-                fileItemValidationConfig.useCustomValidator shouldBe true
-                fileItemValidationConfig.customValidatorCommand shouldBe "blablabla \${filename}"
+            val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
+            directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
+            directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
+            directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
 
-                val directoryItemValidationConfig = firstProfile.directoryItemValidationConfig
-                directoryItemValidationConfig.filesQtyAtLeastAsInPrevious shouldBe true
-                directoryItemValidationConfig.sizeAtLeastAsPrevious shouldBe false
-                directoryItemValidationConfig.fileSizeAtLeastAsInPrevious shouldBe true
-
-                firstProfile.cleanUpPolicy.allInvalidItems shouldBe true
-                firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
-            }
-            is Either.Left -> throw Exception("assert error")
+            firstProfile.cleanUpPolicy.allInvalidItems shouldBe true
+            firstProfile.cleanUpPolicy.invalidItemsBeyondOfKeepQuantity shouldBe true
         }
     }
 })
