@@ -117,10 +117,10 @@ class CommandLineInteractor(
     private fun createFailureFileReport() = createFileReport(false)
 
     private fun createFileReport(success: Boolean) =
-                                    when(createFileReport.create(File(Defaults.REPORT_FILE_NAME), success, Date())) {
-                                        is Try.Success -> log.debug("file report has been saved")
-                                        is Try.Failure -> log.error("unable to create file report")
-                                    }
+        when(createFileReport.create(File(Defaults.REPORT_FILE_NAME), success, Date())) {
+            is Either.Right -> log.debug("file report has been saved")
+            is Either.Left -> log.error("unable to create file report")
+        }
 
     private fun showDirectoryItemsForCleanUp(directoryItems: List<DirectoryItem>) {
         if (directoryItems.isNotEmpty()) {

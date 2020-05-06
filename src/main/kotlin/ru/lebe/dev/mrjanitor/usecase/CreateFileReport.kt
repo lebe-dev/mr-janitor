@@ -1,7 +1,9 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Try
+import arrow.core.Either
 import org.slf4j.LoggerFactory
+import ru.lebe.dev.mrjanitor.domain.OperationError
+import ru.lebe.dev.mrjanitor.domain.OperationResult
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -14,7 +16,7 @@ class CreateFileReport {
         private const val DATE_FORMAT = "yyyy-MM-dd HH:mm:ss"
     }
 
-    fun create(file: File, success: Boolean, finished: Date): Try<File> = Try<File> {
+    fun create(file: File, success: Boolean, finished: Date): OperationResult<File> = try {
         log.info("create file report - '${file.name}'")
         log.debug("- success: $success")
         log.debug("- finished: $finished")
@@ -28,6 +30,10 @@ class CreateFileReport {
 
         log.info("report has been saved")
 
-        file
+        Either.right(file)
+
+    } catch (e: Exception) {
+        log.error("unable to create report file: ${e.message}", e)
+        Either.left(OperationError.ERROR)
     }
 }

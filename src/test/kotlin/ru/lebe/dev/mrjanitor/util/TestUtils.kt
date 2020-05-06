@@ -4,10 +4,12 @@ import arrow.core.Either
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import ru.lebe.dev.mrjanitor.domain.OperationError
+import ru.lebe.dev.mrjanitor.domain.OperationResult
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.UUID
 
-fun <E> assertRightResult(result: Either<OperationError, E>, body: (E) -> Unit) {
+fun <E> assertRightResult(result: OperationResult<E>, body: (E) -> Unit) {
     assertTrue(result.isRight())
 
     when(result) {
@@ -16,7 +18,7 @@ fun <E> assertRightResult(result: Either<OperationError, E>, body: (E) -> Unit) 
     }
 }
 
-fun <E> assertErrorResult(result: Either<OperationError, E>, operationError: OperationError) {
+fun <E> assertErrorResult(result: OperationResult<E>, operationError: OperationError) {
     assertTrue(result.isLeft())
 
     when(result) {
@@ -27,4 +29,4 @@ fun <E> assertErrorResult(result: Either<OperationError, E>, operationError: Ope
 
 fun getRandomFileData() = UUID.randomUUID().toString()
 
-fun getDateFromString(dateStr: String) = SimpleDateFormat("yyyy-MM-dd").parse(dateStr)
+fun getDateFromString(dateStr: String): Date = SimpleDateFormat("yyyy-MM-dd").parse(dateStr)
