@@ -165,33 +165,26 @@ internal class GetDirectoryItemsForCleanUpTest {
         // INVALID DATE FORMAT
         createValidDirectory("20190717", 2)
 
-        val results = useCase.getItems(profile)
+        assertRightResult(useCase.getItems(profile)) { results ->
+            val validButOldItems = results.filter { it.valid }
 
-        assertTrue(results.isRight())
+            assertEquals(1, validButOldItems.size)
 
-        when(results) {
-            is Either.Right -> {
-                val validButOldItems = results.b.filter { it.valid }
+            val invalidItems = results.filter { !it.valid }
+            assertEquals(3, invalidItems.size)
 
-                assertEquals(1, validButOldItems.size)
+            listOf("2019-07-13", "2019-07-15").all { directoryName ->
+                var findResult = false
 
-                val invalidItems = results.b.filter { !it.valid }
-                assertEquals(3, invalidItems.size)
+                val directoryFound = results.find { it.name == directoryName }
 
-                listOf("2019-07-13", "2019-07-15").all { directoryName ->
-                    var findResult = false
-
-                    val directoryFound = results.b.find { it.name == directoryName }
-
-                    if (directoryFound != null) {
-                        assertTrue(directoryFound.valid)
-                        findResult = true
-                    }
-
-                    findResult
+                if (directoryFound != null) {
+                    assertTrue(directoryFound.valid)
+                    findResult = true
                 }
+
+                findResult
             }
-            is Either.Left -> throw Exception("assert exception")
         }
     }
 
