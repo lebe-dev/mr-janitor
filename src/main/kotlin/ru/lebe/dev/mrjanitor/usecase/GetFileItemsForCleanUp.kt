@@ -7,6 +7,7 @@ import arrow.core.Some
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.OperationError
+import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.PathFileIndex
 import ru.lebe.dev.mrjanitor.domain.Profile
 
@@ -16,7 +17,7 @@ class GetFileItemsForCleanUp(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun getItems(profile: Profile): Either<OperationError, List<FileItem>> {
+    fun getItems(profile: Profile): OperationResult<List<FileItem>> {
         log.info("get file items for clean up for profile '${profile.name}'")
         log.info("- path: '${profile.path}'")
 
