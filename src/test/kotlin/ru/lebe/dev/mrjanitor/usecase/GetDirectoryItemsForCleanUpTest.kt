@@ -21,7 +21,9 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFi
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithInvalidHash
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
 import ru.lebe.dev.mrjanitor.util.assertErrorResult
+import ru.lebe.dev.mrjanitor.util.assertRightResult
 import ru.lebe.dev.mrjanitor.util.getDateFromString
+import ru.lebe.dev.mrjanitor.util.getRandomText
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
@@ -124,32 +126,25 @@ internal class GetDirectoryItemsForCleanUpTest {
             createValidArchiveFiles(it, 7) // GOOD
         }
 
-        val results = useCase.getItems(profile)
+        assertRightResult(useCase.getItems(profile)) { results ->
+            assertEquals(5, results.size)
 
-        assertTrue(results.isRight())
+            val validButOldItems = results.filter { it.valid }
 
-        when(results) {
-            is Either.Right -> {
-                assertEquals(5, results.b.size)
+            assertEquals(2, validButOldItems.size)
 
-                val validButOldItems = results.b.filter { it.valid }
+            val invalidItems = results.filter { !it.valid }
+            assertEquals(3, invalidItems.size)
 
-                assertEquals(2, validButOldItems.size)
-
-                val invalidItems = results.b.filter { !it.valid }
-                assertEquals(3, invalidItems.size)
-
-                listOf("2019-07-13", "2019-07-15").forEach { directoryName ->
-                    assertNull(results.b.find { it.name == directoryName })
-                }
+            listOf("2019-07-13", "2019-07-15").forEach { directoryName ->
+                assertNull(results.find { it.name == directoryName })
             }
-            is Either.Left -> throw Exception("assert exception")
         }
     }
 
     @Test
     fun `Respect directory name filter`() {
-        createValidDirectory("zimbambwa", 2)
+        createValidDirectory(getRandomText(), 2)
 
         createInvalidDirectory("2019-07-09")
 
