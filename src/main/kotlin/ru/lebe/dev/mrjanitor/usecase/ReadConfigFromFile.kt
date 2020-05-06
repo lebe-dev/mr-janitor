@@ -10,6 +10,7 @@ import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.CleanUpPolicy
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.domain.OperationError
+import ru.lebe.dev.mrjanitor.domain.OperationResult
 import ru.lebe.dev.mrjanitor.domain.Profile
 import ru.lebe.dev.mrjanitor.domain.StorageUnit
 import ru.lebe.dev.mrjanitor.domain.validation.DirectoryItemValidationConfig
@@ -31,7 +32,7 @@ class ReadConfigFromFile {
         private const val ITEM_VALIDATION_SECTION = "item-validation"
     }
 
-    fun read(file: File): Either<OperationError, AppConfig> {
+    fun read(file: File): OperationResult<AppConfig> {
         log.info("read configuration from file '${file.absolutePath}'")
 
         return if (file.exists()) {
@@ -100,7 +101,7 @@ class ReadConfigFromFile {
         cleanAction = CleanAction.JUST_NOTIFY
     )
 
-    private fun loadProfiles(config: Config, defaultProfile: Profile): Either<OperationError, List<Profile>> =
+    private fun loadProfiles(config: Config, defaultProfile: Profile): OperationResult<List<Profile>> =
         if (config.hasPath(PROFILES_SECTION)) {
 
             val profiles = arrayListOf<Profile>()
@@ -154,7 +155,7 @@ class ReadConfigFromFile {
     }
 
     private fun loadProfile(config: Config, profileName: String,
-                            defaultProfile: Profile): Either<OperationError, Profile> =
+                            defaultProfile: Profile): OperationResult<Profile> =
 
         if (config.hasPath(profileName)) {
             Either.right(
