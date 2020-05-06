@@ -104,14 +104,14 @@ internal class CreateFileIndexTest {
         val firstSubDirectory = Paths.get(indexPath.toString(), "2019-07-16").apply { toFile().mkdir() }
 
         val firstFileData = getRandomText()
-        val firstFile = Paths.get(firstSubDirectory.toString(), "richard.jpg")
+        val firstFile = Paths.get(firstSubDirectory.toString(), getRandomText())
                              .toFile().apply { writeText(firstFileData) }
         val firstFileHash = DigestUtils.md5Hex(firstFile.readBytes())
 
         val secondSubDirectory = Paths.get(indexPath.toString(), "2019-07-17")
                                       .apply { toFile().mkdir() }
         val secondFileData = getRandomText()
-        val secondFile = Paths.get(secondSubDirectory.toString(), "bernard.jpg").toFile()
+        val secondFile = Paths.get(secondSubDirectory.toString(), getRandomText()).toFile()
                               .apply { writeText(secondFileData) }
         val secondFileHash = DigestUtils.md5Hex(secondFile.readBytes())
 
@@ -159,7 +159,7 @@ internal class CreateFileIndexTest {
 
     @Test
     fun `Return error if path doesn't exist`() {
-        val profile = profile.copy(path = File("does-not-exist").toPath().toString())
+        val profile = profile.copy(path = File(getRandomText()).toPath().toString())
 
         val result = useCase.create(profile)
 
