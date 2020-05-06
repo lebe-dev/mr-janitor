@@ -21,7 +21,7 @@
 Создайте конфигурационный файл `janitor.conf`:
 
 ```
-cp janitor.conf-distrib-ru janitor.conf 
+cp janitor.conf-distrib-full-ru janitor.conf 
 ```
 
 ## Установка

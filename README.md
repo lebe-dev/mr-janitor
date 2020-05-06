@@ -25,7 +25,7 @@ Deal with outdated files in a smart way.
 Create configuration file `janitor.conf`:
 
 ```
-cp janitor.conf-distrib janitor.conf 
+cp janitor.conf-distrib-full janitor.conf 
 ```
 
 ## How to install
