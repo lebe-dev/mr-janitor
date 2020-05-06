@@ -14,7 +14,6 @@ repositories {
     mavenCentral()
     jcenter()
     maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
-    maven("https://oss.jfrog.org/artifactory/oss-snapshot-local/")
 }
 
 dependencies {
@@ -22,7 +21,7 @@ dependencies {
 
     implementation("com.github.ajalt:clikt:2.2.0")
 
-    implementation("io.arrow-kt:arrow-core-data:0.9.0")
+    implementation("io.arrow-kt:arrow-core-data:0.10.5")
 
     implementation("com.typesafe:config:1.3.4")
 
