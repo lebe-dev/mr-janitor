@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "ru.lebe.dev.mrjanitor"
-version = "1.0.0-BETA"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
