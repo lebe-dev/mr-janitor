@@ -1,14 +1,13 @@
 package ru.lebe.dev.mrjanitor.usecase
 
+import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import arrow.core.Try
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.FileItem
 import ru.lebe.dev.mrjanitor.domain.FileItemValidationConfig
 import ru.lebe.dev.mrjanitor.util.CommandExecutor
-import ru.lebe.dev.mrjanitor.util.Defaults
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -87,15 +86,13 @@ class CheckIfFileItemValid {
             command = applyVariablesToCommandLine(validatorCommand, templateVariables),
             workDir = fileItem.path.toFile().parentFile.toPath().toFile()
         )) {
-            is Try.Success -> {
-                if (executionResult.value.exitCode == Defaults.EXIT_CODE_OK) {
+            is Either.Right -> {
+                if (executionResult.b.isSuccess()) {
                     result = true
 
-                } else {
-                    log.error("validation error")
-                }
+                } else { log.error("validation error") }
             }
-            is Try.Failure -> log.error("command execution error")
+            is Either.Left -> log.error("command execution error")
         }
 
         return result
