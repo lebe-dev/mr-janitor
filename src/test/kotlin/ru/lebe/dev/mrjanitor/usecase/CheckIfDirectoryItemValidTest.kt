@@ -21,6 +21,7 @@ import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createDirectory
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createFilesWithAbsentHashFile
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createRandomJunkFiles
 import ru.lebe.dev.mrjanitor.util.SampleDataProvider.createValidArchiveFiles
+import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -224,39 +225,30 @@ internal class CheckIfDirectoryItemValidTest {
                 fileItemValidationConfig = fileItemValidationConfig, cleanAction = CleanAction.JUST_NOTIFY
         )
 
-        val pathIndex = createFileIndex.create(profile)
+        assertRightResult(createFileIndex.create(profile)) { pathIndex ->
+            val directoryItem = DirectoryItem(
+                path = directory2.toPath(),
+                name = directoryName2,
+                size = dirTotalSize2.toLong(),
+                fileItems = pathIndex.directoryItems.last().fileItems,
+                valid = true
+            )
 
-        assertTrue(pathIndex.isRight())
+            val previousDirectoryItem = DirectoryItem(
+                path = directory1.toPath(),
+                name = directoryName1,
+                size = dirTotalSize1.toLong(),
+                fileItems = pathIndex.directoryItems.first().fileItems,
+                valid = true
+            )
 
-        when(pathIndex) {
-            is Either.Right -> {
-
-                val directoryItem = DirectoryItem(
-                    path = directory2.toPath(),
-                    name = directoryName2,
-                    size = dirTotalSize2.toLong(),
-                    fileItems = pathIndex.b.directoryItems.last().fileItems,
-                    valid = true
+            assertTrue(
+                useCase.isValid(
+                    directoryItem, Some(previousDirectoryItem),
+                    directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
+                    fileItemValidationConfig
                 )
-
-                val previousDirectoryItem = DirectoryItem(
-                    path = directory1.toPath(),
-                    name = directoryName1,
-                    size = dirTotalSize1.toLong(),
-                    fileItems = pathIndex.b.directoryItems.first().fileItems,
-                    valid = true
-                )
-
-                assertTrue(
-                    useCase.isValid(
-                        directoryItem, Some(previousDirectoryItem),
-                        directoryValidationConfig.copy(filesQtyAtLeastAsInPrevious = true),
-                        fileItemValidationConfig
-                    )
-                )
-
-            }
-            is Either.Left -> throw Exception("assert error")
+            )
         }
     }
 
