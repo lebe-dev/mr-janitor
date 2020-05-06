@@ -26,7 +26,7 @@ cp janitor.conf-distrib-ru janitor.conf
 
 ## Установка
 
-Создайте каталог для приложения:
+**1. Создаем каталог для приложения**
 
 ```
 mkdir /opt/janitor
@@ -34,9 +34,13 @@ chown -R janitor.janitor /opt/janitor
 chmod 750 /opt/janitor
 ```
 
-Создайте нового пользователя `janitor`.
+**2. Создаём нового пользователя**
 
-Дайте права для доступа к каталогу с данными
+```shell script
+useradd -d /opt/janitor janitor && chown -R janitor: /opt/janitor
+```
+
+**3. Даем права для доступа к каталогу с данными для очистки**
 
 Например:
 
@@ -44,14 +48,14 @@ chmod 750 /opt/janitor
 setfacl -Rm u:janitor:rwx /backups
 ```
 
-Добавьте строку запуска в cron:
+**4. Добавляем задачу запуска Janitor в cron**
 
 ```
 # backups cleanup by janitor
-0 19  *  *  *  janitor java -jar /opt/janitor/janitor.jar cleanup
+0 19  *  *  *  java -jar /opt/janitor/janitor.jar cleanup
 ```
 
-Перезапустите crond.
+Перезапускаем `crond`.
 
 ### Очистка ненужных файлов / Clean Up
 
