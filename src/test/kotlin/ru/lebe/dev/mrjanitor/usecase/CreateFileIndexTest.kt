@@ -201,26 +201,19 @@ internal class CreateFileIndexTest {
             indexPath, UUID.randomUUID().toString()
         )
 
-        Paths.get(indexPath.toString(), "bunny.jpg").toFile().apply { writeText(getRandomText()) }
-        Paths.get(indexPath.toString(), "winny.bmp").toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
+        Paths.get(indexPath.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
 
         val profile = profile.copy(storageUnit = StorageUnit.FILE, fileNameFilter = Regex(fileNameFilter))
 
-        val results = useCase.create(profile)
+        assertRightResult(useCase.create(profile)) { results ->
+            assertEquals(indexPath, results.path)
+            assertEquals(StorageUnit.FILE, results.storageUnit)
+            assertEquals(1, results.fileItems.size)
+            assertTrue(results.directoryItems.isEmpty())
 
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                assertEquals(indexPath, results.b.path)
-                assertEquals(StorageUnit.FILE, results.b.storageUnit)
-                assertEquals(1, results.b.fileItems.size)
-                assertTrue(results.b.directoryItems.isEmpty())
-
-                val firstItem = results.b.fileItems.first()
-                assertEquals(Paths.get(indexPath.toString(), firstFile.name).toString(), firstItem.path.toString())
-            }
-            is Either.Left -> throw Exception("assertion error")
+            val firstItem = results.fileItems.first()
+            assertEquals(Paths.get(indexPath.toString(), firstFile.name).toString(), firstItem.path.toString())
         }
     }
 
@@ -234,7 +227,7 @@ internal class CreateFileIndexTest {
             getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
             getSampleArchiveFileWithCompanions(directory, UUID.randomUUID().toString())
 
-            Paths.get(directory.toString(), "dandy.jpg").toFile().apply { writeText(getRandomText()) }
+            Paths.get(directory.toString(), getRandomText()).toFile().apply { writeText(getRandomText()) }
         }
 
         val profile = profile.copy(fileNameFilter = Regex(fileNameFilter))
