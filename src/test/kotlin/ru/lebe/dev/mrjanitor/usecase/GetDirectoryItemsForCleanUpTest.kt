@@ -1,6 +1,5 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Either
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -197,24 +196,15 @@ internal class GetDirectoryItemsForCleanUpTest {
         createInvalidDirectory("2019-07-14")
         createValidDateDirectory("2019-07-15", 5)
 
-        val results = useCase.getItems(
+        assertRightResult(useCase.getItems(
             profile.copy(
                 keepItemsQuantity = 3,
                 cleanUpPolicy = CleanUpPolicy(invalidItemsBeyondOfKeepQuantity = true, allInvalidItems = false)
             )
-        )
-
-        assertTrue(results.isRight())
-
-        when(results) {
-            is Either.Right -> {
-                val itemsForCleanUp = results.b
-
-                assertEquals(2, itemsForCleanUp.size)
-                assertEquals("2019-07-10", itemsForCleanUp.first().name)
-                assertEquals("2019-07-11", itemsForCleanUp.last().name)
-            }
-            is Either.Left -> throw Exception("assert exception")
+        )) { results ->
+            assertEquals(2, results.size)
+            assertEquals("2019-07-10", results.first().name)
+            assertEquals("2019-07-11", results.last().name)
         }
     }
 
