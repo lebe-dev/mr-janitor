@@ -1,6 +1,5 @@
 package ru.lebe.dev.mrjanitor.usecase
 
-import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
@@ -98,38 +97,31 @@ internal class GetFileItemsForCleanUpTest {
 
         createValidArchiveFiles(indexPath, 2) // GOOD
 
-        val results = useCase.getItems(profile)
+        assertRightResult(useCase.getItems(profile)) { results ->
+            val validButOldItems = results.filter { it.valid }
 
-        assertTrue(results.isRight())
+            assertEquals(4, validButOldItems.size)
 
-        when(results) {
-            is Either.Right -> {
-                val validButOldItems = results.b.filter { it.valid }
+            val invalidItems = results.filter { !it.valid }
+            assertEquals(13, invalidItems.size)
 
-                assertEquals(4, validButOldItems.size)
-
-                val invalidItems = results.b.filter { !it.valid }
-                assertEquals(13, invalidItems.size)
-
-                assertTrue(
-                    validButOldItems.all {
-                        checkIfFileItemValid.isValid(
-                            it, getPreviousFileItem(validButOldItems, it.path.toString()),
-                            profile.fileItemValidationConfig
-                        )
-                    }
-                )
-                assertTrue(
-                    invalidItems.all {
-                        !checkIfFileItemValid.isValid(
-                            it,
-                            getPreviousFileItem(validButOldItems, it.path.toString()),
-                            profile.fileItemValidationConfig
-                        )
-                    }
-                )
-            }
-            is Either.Left -> throw Exception("assert exception")
+            assertTrue(
+                validButOldItems.all {
+                    checkIfFileItemValid.isValid(
+                        it, getPreviousFileItem(validButOldItems, it.path.toString()),
+                        profile.fileItemValidationConfig
+                    )
+                }
+            )
+            assertTrue(
+                invalidItems.all {
+                    !checkIfFileItemValid.isValid(
+                        it,
+                        getPreviousFileItem(validButOldItems, it.path.toString()),
+                        profile.fileItemValidationConfig
+                    )
+                }
+            )
         }
     }
 
