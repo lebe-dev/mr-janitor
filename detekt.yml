@@ -1,5 +1,5 @@
 build:
-  maxIssues: 10
+  maxIssues: 12
   weights:
   # complexity: 2
   # LongParameterList: 1
@@ -114,7 +114,7 @@ empty-blocks:
     active: true
   EmptyFunctionBlock:
     active: true
-    ignoreOverriddenFunctions: false
+    ignoreOverridden: false
   EmptyIfBlock:
     active: true
   EmptyInitBlock:
@@ -192,7 +192,7 @@ formatting:
   Filename:
     active: true
   FinalNewline:
-    active: true
+    active: false
     autoCorrect: true
   ImportOrdering:
     active: false
@@ -218,8 +218,8 @@ formatting:
   NoEmptyClassBody:
     active: true
     autoCorrect: true
-  NoItParamInMultilineLambda:
-    active: false
+#  NoItParamInMultilineLambda:
+#    active: false
   NoLineBreakAfterElse:
     active: true
     autoCorrect: true
@@ -275,9 +275,9 @@ formatting:
   SpacingAroundRangeOperator:
     active: true
     autoCorrect: true
-  SpacingAroundUnaryOperators:
-    active: true
-    autoCorrect: true
+#  SpacingAroundUnaryOperators:
+#    active: true
+#    autoCorrect: true
   StringTemplate:
     active: true
     autoCorrect: true
@@ -321,7 +321,7 @@ naming:
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
     parameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverriddenFunctions: true
+    ignoreOverridden: true
   InvalidPackageDeclaration:
     active: false
     rootPackage: ''
@@ -329,7 +329,7 @@ naming:
     active: true
   MemberNameEqualsClassName:
     active: false
-    ignoreOverriddenFunction: true
+    ignoreOverridden: true
   ObjectPropertyNaming:
     active: true
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
@@ -371,7 +371,7 @@ performance:
     excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt"
   SpreadOperator:
     active: true
-    excludes: "**/test/**,**/androidTest/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt,**/AgentApp.kt"
+    excludes: "**/test/**,**/*.Test.kt,**/*.Spec.kt,**/*.Spek.kt,**/App.kt,**/WebMvcConfig.kt,**/MannaApplication.kt"
   UnnecessaryTemporaryInstantiation:
     active: true
 
@@ -477,7 +477,7 @@ style:
   NestedClassesVisibility:
     active: false
   NewLineAtEndOfFile:
-    active: true
+    active: false
   NoTabs:
     active: false
   OptionalAbstractKeyword:
