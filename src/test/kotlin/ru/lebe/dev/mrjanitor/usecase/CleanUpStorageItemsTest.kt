@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
 import ru.lebe.dev.mrjanitor.domain.FileItem
+import ru.lebe.dev.mrjanitor.util.assertRightResult
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -48,12 +49,10 @@ internal class CleanUpStorageItemsTest {
             )
         }
 
-        val result = useCase.cleanUp(directoryItems)
-
-        assertTrue(result.isSuccess())
-
-        directoryNames.forEach {
-            assertFalse(Paths.get(temporaryDirectory.toString(), it).toFile().exists())
+        assertRightResult(useCase.cleanUp(directoryItems)) {
+            directoryNames.forEach {
+                assertFalse(Paths.get(temporaryDirectory.toString(), it).toFile().exists())
+            }
         }
     }
 
@@ -69,9 +68,9 @@ internal class CleanUpStorageItemsTest {
 
         assertFalse(dir.toFile().exists())
 
-        val result = useCase.cleanUp(listOf(item))
-
-        assertTrue(result.isSuccess())
+        assertRightResult(useCase.cleanUp(listOf(item))) {
+            assertTrue(it)
+        }
     }
 
     @Test
@@ -94,9 +93,9 @@ internal class CleanUpStorageItemsTest {
             )
         }
 
-        val result = useCase.cleanUp(fileItems)
-
-        assertTrue(result.isSuccess())
+        assertRightResult(useCase.cleanUp(fileItems)) {
+            assertTrue(it)
+        }
 
         fileNames.forEach {
             assertFalse(Paths.get(temporaryDirectory.toString(), it).toFile().exists())

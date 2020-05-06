@@ -1,7 +1,6 @@
 package ru.lebe.dev.mrjanitor.interactor
 
 import arrow.core.Either
-import arrow.core.Try
 import org.slf4j.LoggerFactory
 import ru.lebe.dev.mrjanitor.domain.CleanAction
 import ru.lebe.dev.mrjanitor.domain.DirectoryItem
@@ -84,9 +83,16 @@ class CommandLineInteractor(
     }
 
     private fun cleanUpFileItems(fileItems: List<FileItem>) {
-        when(cleanUpStorageItems.cleanUp(fileItems)) {
-            is Try.Success -> createSuccessFileReport()
-            is Try.Failure -> createFailureFileReport()
+        when(val cleanUpResult = cleanUpStorageItems.cleanUp(fileItems)) {
+            is Either.Right -> {
+                if (cleanUpResult.b) {
+                    createSuccessFileReport()
+
+                } else {
+                    createFailureFileReport()
+                }
+            }
+            is Either.Left -> createFailureFileReport()
         }
     }
 
@@ -103,9 +109,16 @@ class CommandLineInteractor(
         getDirectoryItemsForCleanUp(profile) { directoryItems ->
             when(profile.cleanAction) {
                 CleanAction.REMOVE -> {
-                    when(cleanUpStorageItems.cleanUp(directoryItems)) {
-                        is Try.Success -> createSuccessFileReport()
-                        is Try.Failure -> createFailureFileReport()
+                    when(val cleanUpResult = cleanUpStorageItems.cleanUp(directoryItems)) {
+                        is Either.Right -> {
+                            if (cleanUpResult.b) {
+                                createSuccessFileReport()
+
+                            } else {
+                                createFailureFileReport()
+                            }
+                        }
+                        is Either.Left -> createFailureFileReport()
                     }
                 }
                 else -> showDirectoryItemsForCleanUp(directoryItems)
